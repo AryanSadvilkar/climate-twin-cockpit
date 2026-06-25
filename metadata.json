@@ -1,0 +1,6 @@
+{
+  "name": "ClimateTwin India",
+  "description": "Geospatial Digital Twin for Indian meteorological simulation, showing real-time temperature, precipitation, wind speed, and pressure layouts with What-If simulations and AI reports.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
