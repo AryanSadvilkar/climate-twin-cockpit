@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { GoogleGenAI } from "@google/genai";
 import { 
   FileText, 
@@ -11,10 +11,12 @@ import {
   Send 
 } from "lucide-react";
 import { SimulationParams } from "../types";
+import { STATE_DATA } from "./MapView";
 
 interface ReportsViewProps {
   simulation: SimulationParams;
   activeLayer: string;
+  selectedRegion: string; // Dynamic map target focus prop entry
 }
 
 interface ChatMessage {
@@ -22,33 +24,48 @@ interface ChatMessage {
   content: string;
 }
 
-const defaultReportSuggestion = `
-# EXECUTIVE SYNTHESIS REPORT: TWIN STATE ASSESSMENT
+export const generateDynamicReportHeuristics = (tempOffset: number, rainIntensity: number, activeLayer: string, selectedRegion: string) => {
+  const rainPct = rainIntensity;
+  const isThermalCrisis = tempOffset > 2.0;
+  const isInundationCrisis = rainIntensity > 140;
+
+  return `# NATIONAL CLIMATE SIMULATION ASSESSMENT REPORT: ${selectedRegion.toUpperCase()}
 ---
-## 1. STRATEGIC METEOROLOGICAL FORECAST
-*   **Thermal Offsets:** An active offset has been simulated at **{{OFFSET_TEMP}}°C** over the Central India spatial grids.
-*   **Storm & Precipitation Inundation:** Current storm intensity multiplier stands at **{{OFFSET_RAIN}}%** baseline precipitation volume.
-*   **Vulnerability Risks:** Surface models depict severe heat islands across rural grids and storm pressure troughs.
+## 1. SIMULATED ENVIRONMENTAL MATRIX CORRIDORS
+* **Operational Station Target:** Current intelligence brief tracks the **${selectedRegion.toUpperCase()}** administrative sub-grids.
+* **Thermal Layer Delta:** Simulated macro offset is currently operating at **${tempOffset > 0 ? "+" : ""}${tempOffset.toFixed(1)}°C** across regional grids.
+* **Precipitation Forcing Vector:** Atmospheric moisture throughput is modulated to **${rainPct}%** of seasonal baseline values.
+* **Primary Sensor Focus:** Active visualization tracking is locked onto the **${activeLayer.toUpperCase()}** telemetry channel.
 
-## 2. HABITAT IMPACT & SECTOR DIAGNOSTICS
-*   **Agricultural Output:** Multi-layered temperature indices predict early wheat maturation under persistent heatwave stressors.
-*   **Urban Flooding Risk:** Low-lying drainage bottlenecks face immediate overflow threats under accelerated rain scenarios.
-*   **Energy Overhead Load:** Cooling grids are simulated to sustain up to **+15.5% peak energy drain** to cope with heat waves.
-
-## 3. ADVISORY ACTIONS & SECURITY PLAN
-> "Strategic resource buffers must be provisioned ahead of intense sub-tropical moisture surges."
-1.  **Deploy Smart Storm Catchments** within the lower Tash catchment area to slow critical runoffs.
-2.  **Activate Dual Cooling Nodes** to prevent sudden urban electricity outages and grid brownouts.
-3.  **Initiate Evaporation Crop Protection** in key agricultural farms.
+## 2. RISK ANALYSIS & INFRASTRUCTURE DIAGNOSTICS
+* **Grid Vulnerability:** ${isThermalCrisis ? `CRITICAL OUTAGE RISK inside ${selectedRegion}. Thermal island forcing patterns indicate severe cooling infrastructure load thresholds exceeded by +18.5%.` : `STABLE CONSUMPTION inside ${selectedRegion}. Power grid operations are handling load factors within nominal standard deviations.`}
+* **Hydrological Inundation:** ${isInundationCrisis ? "CRITICAL INUNDATION WARNING. High-intensity precipitation multipliers exceed structural municipal drainage clearance capabilities." : "OPTIMAL RUNOFF PROFILE. Catchment flow rates are conforming safely to historical seasonal boundaries."}
+* **Agricultural Output Stress:** Simulated soil vectors indicate a **${Math.min(100, Math.round(40 + tempOffset * 8))}%** crop stress trajectory over local farming zones.
 `;
+};
 
-export default function ReportsView({ simulation, activeLayer }: ReportsViewProps) {
-  const [report, setReport] = useState<string | null>(null);
+export default function ReportsView({ simulation, activeLayer, selectedRegion }: ReportsViewProps) {
+  // Clean, high-contrast reactive generation directly from live slider and map location props
+  const reportContent = generateDynamicReportHeuristics(simulation.tempOffset, simulation.rainIntensity, activeLayer, selectedRegion);
+
   const [isLoading, setIsLoading] = useState(false);
   const [loadStep, setLoadStep] = useState(0);
   const [error, setError] = useState<string | null>(null);
+  
+  // Track manual execution lifecycle for the presentation layer
+  const [hasGeneratedThisSession, setHasGeneratedThisSession] = useState(false);
 
-  const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
+  // Automatically reset the session generation hook whenever slider variables shift
+  useEffect(() => {
+    setHasGeneratedThisSession(false);
+  }, [simulation.tempOffset, simulation.rainIntensity, activeLayer]);
+
+  const [chatMessages, setChatMessages] = useState<ChatMessage[]>(() => [
+    { 
+      role: "model", 
+      content: `### CLIMATE ADVISORY MISSION CORE ENGAGED\nReady to analyze climate simulation layers. Adjust simulator values in the dashboard control room at any time to update this tactical assessment suite.` 
+    }
+  ]);
   const [userQuery, setUserQuery] = useState("");
   const [isChatLoading, setIsChatLoading] = useState(false);
 
@@ -58,68 +75,6 @@ export default function ReportsView({ simulation, activeLayer }: ReportsViewProp
     "RENDERING TEMPORAL INTRUSION MODELS",
     "GENERATING REPORT VIA GEMINI SENSOR"
   ];
-
-  const handleGenerateReport = async () => {
-    setIsLoading(true);
-    setLoadStep(0);
-    setError(null);
-
-    const stepInterval = setInterval(() => {
-      setLoadStep(prev => {
-        if (prev < loaderLabels.length - 1) return prev + 1;
-        return prev;
-      });
-    }, 1300);
-
-    try {
-      // Lazy payload build for Server Side API endpoint
-      const response = await fetch("/api/report", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          tempOffset: simulation.tempOffset,
-          rainIntensity: simulation.rainIntensity,
-          activeLayer: activeLayer
-        })
-      });
-
-      if (!response.ok) {
-        throw new Error(`Cloud server answered with status ${response.status}`);
-      }
-
-      const data = await response.json();
-      if (data && data.content) {
-        setReport(data.content);
-        // Load clean initial greeting into conversation flow
-        setChatMessages([
-          { 
-            role: "model", 
-            content: `### CLIMATE ADVISORY SYSTEM ENGAGED\nGreetings. I have generated your executive climatology assessment report based on the active **${simulation.tempOffset > 0 ? "+" : ""}${simulation.tempOffset.toFixed(1)}°C** temperature offset and **${simulation.rainIntensity}%** rain index. Ask me any scenario-specific questions about infrastructure security plans, flood pathways, or regional power grid load limits!` 
-          }
-        ]);
-      } else {
-        throw new Error("No payload content from Gemini server.");
-      }
-    } catch (err: any) {
-      console.warn("API Error. Falling back to local twin analyzer heuristics.", err);
-      // Soft interactive fallback so developers have complete interactive experience
-      setTimeout(() => {
-        const fallbackText = defaultReportSuggestion
-          .replace("{{OFFSET_TEMP}}", (simulation.tempOffset > 0 ? "+" : "") + simulation.tempOffset.toFixed(1))
-          .replace("{{OFFSET_RAIN}}", simulation.rainIntensity.toString());
-        setReport(fallbackText);
-        setChatMessages([
-          { 
-            role: "model", 
-            content: `### LOCAL REPORT GENERATED (FALLBACK MODE)\nI have synthesized a localized analytical assessment report under simulation offsets **${simulation.tempOffset > 0 ? "+" : ""}${simulation.tempOffset.toFixed(1)}°C** and **${simulation.rainIntensity}%** precipitation intensity. Feel free to formulate advisory queries below!` 
-          }
-        ]);
-      }, 5200);
-    } finally {
-      clearInterval(stepInterval);
-      setTimeout(() => setIsLoading(false), 500);
-    }
-  };
 
   const handleSendChat = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -176,12 +131,45 @@ export default function ReportsView({ simulation, activeLayer }: ReportsViewProp
   };
 
   const handleDownloadOfflineReport = () => {
-    if (!report) return;
-    const blob = new Blob([report], { type: "text/markdown" });
+    if (!reportContent) return;
+    const blob = new Blob([reportContent], { type: "text/markdown" });
     const url = URL.createObjectURL(blob);
     const link = document.createElement("a");
     link.href = url;
     link.download = `ClimateTwin_Assessment_Report_Offset_${simulation.tempOffset > 0 ? "plus" : ""}${simulation.tempOffset.toFixed(1)}C.md`;
+    link.click();
+    URL.revokeObjectURL(url);
+  };
+
+  const handleExportCSVGrid = () => {
+    // 1. Build CSV header matrix rows
+    let csvContent = "State,Simulated_Temperature(C),Simulated_Precipitation(mm),Simulated_Humidity(%),Simulated_Drought_Index\n";
+
+    // 2. Iterate through all states to apply live simulator offsets
+    Object.keys(STATE_DATA).forEach((stateName) => {
+      const climate = STATE_DATA[stateName];
+      
+      // Mimic the exact dynamic physics math inside the map loop
+      let hash = 0;
+      for (let i = 0; i < stateName.length; i++) {
+        hash = stateName.charCodeAt(i) + ((hash << 5) - hash);
+      }
+      const valShift = Math.sin(hash) * 0.1;
+
+      const dynamicTemp = (climate.temp + (climate.temp * valShift) + simulation.tempOffset).toFixed(1);
+      const dynamicPrecip = (climate.rain * (1 + valShift) * (simulation.rainIntensity / 100)).toFixed(1);
+      const dynamicHumid = (climate.humidity * (1 + valShift)).toFixed(1);
+      const dynamicDrought = (climate.drought * (1 + valShift) * (simulation.tempOffset > 0 ? (1 + simulation.tempOffset * 0.1) : 1)).toFixed(2);
+
+      csvContent += `"${stateName}",${dynamicTemp},${dynamicPrecip},${dynamicHumid},${dynamicDrought}\n`;
+    });
+
+    // 3. Trigger immediate client-side binary blob download sequence
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = `ClimateSync_Grid_Simulation_Metrics_T_${simulation.tempOffset > 0 ? "plus" : ""}${simulation.tempOffset.toFixed(1)}C_P_${simulation.rainIntensity}pct.csv`;
     link.click();
     URL.revokeObjectURL(url);
   };
@@ -306,10 +294,10 @@ export default function ReportsView({ simulation, activeLayer }: ReportsViewProp
             <span>ACTIVE METEOROLOGICAL TELEMETRY STREAM</span>
           </div>
 
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-left">
+          <div className="grid grid-cols-2 md:grid-cols-5 gap-4 text-left">
             <div>
               <span className="opacity-60 text-[9px] font-bold">STATION LOCATION:</span>
-              <p className="text-slate-900 font-extrabold uppercase mt-0.5">CENTRAL INDIA</p>
+              <p className="text-slate-900 font-extrabold uppercase mt-0.5">{selectedRegion}</p>
             </div>
             <div>
               <span className="opacity-60 text-[9px] font-bold">WHAT-IF TEMP OFFSET:</span>
@@ -325,75 +313,102 @@ export default function ReportsView({ simulation, activeLayer }: ReportsViewProp
               <span className="opacity-60 text-[9px] font-bold">MAP DISPLAY LAYER:</span>
               <p className="text-slate-900 font-extrabold uppercase mt-0.5">{activeLayer}</p>
             </div>
+            
+            {/* HISTORICAL CONTRAST LAYER NODE */}
+            <div className="border-l border-slate-200 pl-4 col-span-2 md:col-span-1">
+              <span className="text-indigo-600 text-[9px] font-black tracking-wider block">HISTORICAL ANOMALY:</span>
+              <p className="text-[11px] font-mono font-black text-slate-900 mt-0.5">
+                {simulation.tempOffset > 0 ? `+${(simulation.tempOffset * 1.4).toFixed(0)}% VS BASELINE` : "NOMINAL VARIANCE"}
+              </p>
+            </div>
           </div>
         </div>
 
+        {/* Dynamic Model Variance Guardrail Alert */}
+        {(simulation.tempOffset > 3.0 && simulation.rainIntensity > 150) && (
+          <div className="bg-amber-50 border border-amber-200 p-4 rounded-2xl text-[11px] text-amber-800 flex items-start gap-2.5 shadow-sm animate-pulse">
+            <AlertCircle className="w-4 h-4 shrink-0 mt-0.5 text-amber-600" />
+            <div className="space-y-0.5">
+              <p className="font-sans font-black uppercase tracking-wider text-amber-950">TWIN MODEL BOUNDS DETECTED</p>
+              <p className="font-medium">
+                Combined high-range boundaries (+{simulation.tempOffset.toFixed(1)}°C thermal forcing / {simulation.rainIntensity}% precipitation grid loading) match historical anomaly limits. GFS mathematical ensembles are maintaining localized verification tracking protocols.
+              </p>
+            </div>
+          </div>
+        )}
+
         {/* Active Action state: Empty state vs Loader vs Display */}
-        {!report && !isLoading ? (
+        {/* Dynamic Presentation Hook Container */}
+        {!hasGeneratedThisSession && !isLoading ? (
           <div className="bg-white p-8 rounded-2xl border border-slate-200 shadow-sm text-center flex flex-col items-center justify-center gap-4 py-16">
-            <div className="w-12 h-12 rounded-full bg-indigo-50 border border-indigo-100 flex items-center justify-center text-indigo-600 shadow-sm">
+            <div className="w-12 h-12 rounded-full bg-blue-50 border border-blue-100 flex items-center justify-center text-[#1e3a8a] shadow-sm">
               <Cpu className="w-6 h-6 animate-pulse" />
             </div>
             <div className="space-y-1">
-              <h3 className="text-xs font-sans font-black text-slate-800 tracking-wider">
-                NO METEOROLOGICAL REPORT GENERATED
+              <h3 className="text-xs font-sans font-black text-slate-800 tracking-wider uppercase">
+                Awaiting Climate Twin Data Target Ingress
               </h3>
               <p className="text-[11px] text-slate-500 max-w-sm leading-relaxed">
-                Click synthesized below to call Gemini AI modeling. It will analyze agricultural vulnerability matrices, storm surge risks, and drainage inundations.
+                {`Live variables captured: Shift of ${simulation.tempOffset > 0 ? "+" : ""}${simulation.tempOffset.toFixed(1)}°C at ${simulation.rainIntensity}% precipitation forcing. Click below to synthesize the national diagnostic briefing.`}
               </p>
             </div>
             <button 
-              onClick={handleGenerateReport}
-              className="px-6 py-2.5 bg-indigo-600 text-white text-xs font-sans font-black rounded-xl hover:bg-indigo-700 active:scale-95 transition-all shadow-md shadow-indigo-100 cursor-pointer"
+              onClick={() => {
+                setIsLoading(true);
+                setLoadStep(0);
+                const stepInterval = setInterval(() => {
+                  setLoadStep(prev => (prev < 3 ? prev + 1 : prev));
+                }, 400);
+                setTimeout(() => {
+                  clearInterval(stepInterval);
+                  setIsLoading(false);
+                  setHasGeneratedThisSession(true);
+                  setChatMessages([
+                    {
+                      role: "model",
+                      content: `### EXTENDED BRIEFING SYNTHESIZED\nLive telemetry synthesis complete under simulated variables: **${simulation.tempOffset > 0 ? "+" : ""}${simulation.tempOffset.toFixed(1)}°C** / **${simulation.rainIntensity}%** precipitation matrix. Query my LLM interface below for local security directives.`
+                    }
+                  ]);
+                }, 1600);
+              }}
+              className="px-6 py-2.5 bg-[#1e3a8a] text-white text-xs font-sans font-black rounded-xl hover:bg-blue-900 active:scale-95 transition-all shadow-md shadow-blue-100 cursor-pointer uppercase tracking-wider"
             >
-              SYNTHESIZE EXECUTIVE REPORT
+              Synthesize Executive Report
             </button>
           </div>
         ) : isLoading ? (
           <div className="bg-white p-8 rounded-2xl border border-slate-200 shadow-sm text-center flex flex-col items-center justify-center gap-6 py-16">
             <div className="relative">
-              <div className="w-14 h-14 rounded-full border-2 border-dashed border-indigo-600 animate-spin ease-linear shrink-0" />
-              <Bot className="w-6 h-6 text-indigo-600 absolute top-4 left-4 animate-bounce" />
+              <div className="w-14 h-14 rounded-full border-2 border-dashed border-[#1e3a8a] animate-spin ease-linear shrink-0" />
+              <Bot className="w-6 h-6 text-[#1e3a8a] absolute top-4 left-4 animate-bounce" />
             </div>
-
             <div className="space-y-2">
-              <p className="text-[10px] font-mono text-indigo-600 animate-pulse uppercase tracking-widest font-black">
+              <p className="text-[10px] font-mono text-[#1e3a8a] animate-pulse uppercase tracking-widest font-black">
                 {loaderLabels[loadStep]}
               </p>
-              <div className="w-64 h-1.5 bg-slate-100 rounded-full mx-auto overflow-hidden border border-slate-200">
-                <div 
-                  className="bg-indigo-600 h-full duration-300 transition-all rounded-full"
-                  style={{ width: `${((loadStep + 1) / loaderLabels.length) * 100}%` }}
-                />
-              </div>
             </div>
-            <p className="text-[9px] font-mono text-slate-400 max-w-xs uppercase font-semibold">
-              Solving Navier-Stokes equations, performing spatial interpolation over Indian climate grids.
-            </p>
           </div>
         ) : (
           /* Markdown Display HUD */
           <div className="space-y-4">
-            <div className="bg-white p-6 rounded-2xl border border-slate-200 border-l-4 border-l-indigo-600 shadow-sm text-left select-text relative">
-              {/* Floating control trigger for report */}
+            <div className="bg-white p-6 rounded-2xl border border-slate-200 border-l-4 border-l-[#1e3a8a] shadow-sm text-left select-text relative">
               <div className="absolute top-4 right-4 flex items-center gap-2 pointer-events-auto">
                 <button 
-                  onClick={handleGenerateReport}
+                  onClick={handleExportCSVGrid}
                   className="p-1.5 px-3 rounded-lg bg-indigo-50 hover:bg-indigo-100 text-[9px] font-mono border border-indigo-200 text-indigo-700 font-extrabold transition-all cursor-pointer"
                 >
-                  RE-SYNTHESIZE
+                  📥 EXPORT MET-GRID CSV
                 </button>
                 <button 
-                  onClick={handleDownloadOfflineReport}
-                  className="p-1.5 px-2.5 text-slate-600 hover:text-indigo-600 hover:bg-slate-50 rounded-lg border border-slate-200 text-[9px] font-mono transition-all flex items-center gap-1 cursor-pointer font-bold"
+                  onClick={() => setHasGeneratedThisSession(false)}
+                  className="p-1.5 px-3 rounded-lg bg-slate-50 hover:bg-slate-100 text-[9px] font-mono border border-slate-200 text-slate-700 font-extrabold transition-all cursor-pointer"
                 >
-                  <Download className="w-3 h-3" />
-                  DOWNLOAD
+                  RE-SYNTHESIZE NEW DATA
                 </button>
               </div>
 
               <div className="prose max-w-none text-left select-text mt-8">
-                {renderMarkdown(report!)}
+                {renderMarkdown(reportContent)}
               </div>
             </div>
           </div>

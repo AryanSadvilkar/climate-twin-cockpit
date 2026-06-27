@@ -22,7 +22,7 @@ const INDIA_DISTRICTS_URL = 'https://raw.githubusercontent.com/geohacker/india/m
 let globalStateGeoJSON: any = null;
 let globalDistrictGeoJSON: any = null;
 
-const STATE_DATA: Record<string, {rain:number,temp:number,drought:number,wind:number,pressure:number,humidity:number,cloud:number}> = {
+export const STATE_DATA: Record<string, {rain:number,temp:number,drought:number,wind:number,pressure:number,humidity:number,cloud:number}> = {
   'Andhra Pradesh':    {rain:88, temp:36.2,drought:0.32,wind:18,pressure:1008,humidity:72,cloud:45},
   'Arunachal Pradesh':{rain:180,temp:18.4,drought:0.05,wind:12,pressure:1012,humidity:88,cloud:75},
   'Assam':            {rain:220,temp:28.1,drought:0.02,wind:15,pressure:1010,humidity:90,cloud:85},
@@ -157,9 +157,15 @@ const MapViewComponent = forwardRef<any, MapViewProps>(({
     if (!containerRef.current) return;
     const observer = new ResizeObserver((entries) => {
       for (const entry of entries) {
+        const w = entry.contentRect.width;
+        const h = entry.contentRect.height;
+        
+        // CRITICAL GUARDRAIL: If width or height is 0 (tab is hidden/swapped), ignore it to preserve layout
+        if (w === 0 || h === 0) continue;
+
         setDimensions({
-          width: entry.contentRect.width || 700,
-          height: entry.contentRect.height || 600
+          width: w,
+          height: h
         });
       }
     });
@@ -206,50 +212,53 @@ const MapViewComponent = forwardRef<any, MapViewProps>(({
 
   // Calculate Mercator center grids
   const getProjection = (w: number, h: number) => {
+    // Dynamically choose the limiting dimension so the map fits any screen ratio
+    const baseScale = Math.min(w * 2.1, h * 2.45);
+    
     return d3.geoMercator()
       .center([82.8, 22.5])
-      .scale(w * 2.1)
+      .scale(baseScale)
       .translate([w / 2, h / 2]);
   };
 
   const projection = getProjection(dimensions.width, dimensions.height);
   const pathGen = d3.geoPath().projection(projection);
 
-  // Calculate environmental color scales according to weather layer
+  // Calculate premium, professional environmental color scales for light mode
   const getColor = (val: number) => {
     switch (activeLayerId) {
       case "temp":
         return d3.scaleLinear<string>()
           .domain([8, 20, 32, 45])
-          .range(["#1a2f4e", "var(--accent-blue)", "var(--accent-orange)", "var(--accent-red)"])(val);
+          .range(["#e0f2fe", "#7dd3fc", "#fcd34d", "#f87171"])(val); // Soft sky blue -> Mild yellow -> Warm coral red
       case "precip":
         return d3.scaleLinear<string>()
           .domain([0, 50, 120, 250])
-          .range(["#101524", "#1d2558", "var(--accent-blue)", "var(--accent-cyan)"])(val);
+          .range(["#f8fafc", "#bae6fd", "#38bdf8", "#0284c7"])(val); // Premium gradient teals and ocean blues
       case "wind":
         return d3.scaleLinear<string>()
           .domain([0, 15, 30, 60])
-          .range(["#101524", "#11264c", "var(--accent-blue)", "var(--accent-cyan)"])(val);
+          .range(["#f8fafc", "#e2e8f0", "#94a3b8", "#475569"])(val); // High-end clean gray wind gradients
       case "pressure":
         return d3.scaleLinear<string>()
           .domain([990, 1008, 1020])
-          .range(["var(--accent-purple)", "var(--text-muted)", "var(--accent-cyan)"])(val);
+          .range(["#ddd6fe", "#f1f5f9", "#c7d2fe"])(val); // Muted professional barometric tones
       case "humidity":
         return d3.scaleLinear<string>()
           .domain([20, 50, 80, 100])
-          .range(["#271b15", "var(--accent-orange)", "var(--accent-cyan)", "var(--accent-blue)"])(val);
+          .range(["#fef3c7", "#fde68a", "#a5f3fc", "#22d3ee"])(val); // Soft desert sand -> Vibrant hydration teals
       case "drought":
         return d3.scaleLinear<string>()
           .domain([0, 0.3, 0.6, 1.0])
-          .range(["var(--accent-green)", "var(--accent-orange)", "var(--accent-red)", "#5e0f0f"])(val);
+          .range(["#86efac", "#fcd34d", "#f87171", "#ef4444"])(val); // Balanced environmental alert steps
       case "cloud":
         return d3.scaleLinear<string>()
           .domain([0, 40, 80, 100])
-          .range(["#081220", "#313f56", "var(--text-secondary)", "#ffffff"])(val);
+          .range(["#f1f5f9", "#cbd5e1", "#94a3b8", "#475569"])(val); // Natural meteorological coverage gradients
       default:
         return d3.scaleLinear<string>()
           .domain([0, 100])
-          .range(["var(--bg-elevated)", "var(--accent-blue)"])(val);
+          .range(["#e2e8f0", "#3b82f6"])(val);
     }
   };
 
@@ -260,27 +269,33 @@ const MapViewComponent = forwardRef<any, MapViewProps>(({
     const climate = cleanS ? STATE_DATA[cleanS] : null;
     if (!climate) return 25;
 
+    // Generates a unique, repeatable geographical wave pattern per state
     let hash = 0;
     for (let i = 0; i < stateName.length; i++) {
       hash = stateName.charCodeAt(i) + ((hash << 5) - hash);
     }
-    const valShift = Math.sin(hash + activeTimeIndex * 12.3) * 0.1;
+    
+    // TEMPORAL MODULATION WAVE: Changes the weather matrix profile based on the bottom timeline day index
+    const timeFactor = activeTimeIndex * 0.25; 
+    const dynamicOffset = Math.sin(hash + activeTimeIndex) * 2.0;
 
     let base = 25;
     if (activeLayerId === "temp") {
-      base = climate.temp + (climate.temp * valShift) + simulation.tempOffset;
+      // Temperature compounds over days if the simulator shift is positive
+      base = climate.temp + (simulation.tempOffset * (1 + timeFactor)) + dynamicOffset;
     } else if (activeLayerId === "precip") {
-      base = climate.rain * (1 + valShift) * (simulation.rainIntensity / 100);
+      // Rain scaling dynamically alters precipitation volumes along the timeline steps
+      base = climate.rain * (simulation.rainIntensity / 100) * (1 + (Math.cos(hash + timeFactor) * 0.15));
     } else if (activeLayerId === "wind") {
-      base = climate.wind * (1 + valShift);
+      base = climate.wind * (1 + (activeTimeIndex * 0.1)) + Math.abs(dynamicOffset);
     } else if (activeLayerId === "pressure") {
-      base = climate.pressure + (valShift * 5);
+      base = climate.pressure - (activeTimeIndex * 2) + dynamicOffset;
     } else if (activeLayerId === "humidity") {
-      base = climate.humidity * (1 + valShift);
+      base = Math.max(10, Math.min(100, climate.humidity + (simulation.tempOffset * -3 * activeTimeIndex)));
     } else if (activeLayerId === "drought") {
-      base = climate.drought * (1 + valShift) * (simulation.tempOffset > 0 ? (1 + simulation.tempOffset * 0.1) : 1);
+      base = climate.drought * (1 + (simulation.tempOffset > 0 ? simulation.tempOffset * 0.15 * activeTimeIndex : 0));
     } else if (activeLayerId === "cloud") {
-      base = climate.cloud * (1 + valShift);
+      base = Math.max(0, Math.min(100, climate.cloud + (activeTimeIndex * 5 * (simulation.rainIntensity > 100 ? 1 : -0.5))));
     }
     return Number(base.toFixed(1));
   };
@@ -322,28 +337,39 @@ const MapViewComponent = forwardRef<any, MapViewProps>(({
   const zoomToState = (stateFeature: any) => {
     const pathG = pathGenRef.current;
     if (!pathG) return;
-
+    
+    // Get absolute bounding box of the state geometry
     const [[x0, y0], [x1, y1]] = pathG.bounds(stateFeature);
     const stateW = x1 - x0;
     const stateH = y1 - y0;
-
-    // Add padding proportional to state size
-    // Small states get more padding so they're not tiny
-    const isSmallState = stateW < 80 || stateH < 80;
-    const pad = isSmallState ? 20 : 40;
-
-    const vbX = x0 - pad;
-    const vbY = y0 - pad;
-    const vbW = stateW + pad * 2;
-    const vbH = stateH + pad * 2;
-
-    // Enforce minimum viewBox size so small states fill the panel
-    const minDim = Math.min(dimensions.width * 0.4, dimensions.height * 0.4);
-    const finalW = Math.min(vbW, minDim);
-    const finalH = Math.min(vbH, minDim);
-
-    const newVB = `${vbX} ${vbY} ${finalW} ${finalH}`;
-    stateViewBoxRef.current = newVB; // save for district click reset + scroll zoom base
+    
+    // Find geometric center of the shape
+    const stateCenterX = x0 + stateW / 2;
+    const stateCenterY = y0 + stateH / 2;
+    
+    // Read the exact, live layout width and height from the DOM container bounding box
+    const currentW = containerRef.current ? containerRef.current.getBoundingClientRect().width : dimensions.width;
+    const currentH = containerRef.current ? containerRef.current.getBoundingClientRect().height : dimensions.height;
+    
+    // Prevent bad mathematical divisions
+    const finalRenderW = currentW > 0 ? currentW : 700;
+    const finalRenderH = currentH > 0 ? currentH : 600;
+    
+    // Calculate aspect ratio scale based tightly on the live container size
+    const viewScale = Math.max(stateW / finalRenderW, stateH / finalRenderH) * 1.15;
+    const finalW = finalRenderW * viewScale;
+    const finalH = finalRenderH * viewScale;
+    
+    // Align viewport coordinates directly over the state center point
+    const finalX = stateCenterX - finalW / 2;
+    const finalY = stateCenterY - finalH / 2;
+    
+    const newVB = `${finalX} ${finalY} ${finalW} ${finalH}`;
+    stateViewBoxRef.current = newVB;
+    
+    if (svgRef.current) {
+      svgRef.current.setAttribute('viewBox', newVB);
+    }
     animateViewBox(newVB);
   };
 
@@ -366,6 +392,9 @@ const MapViewComponent = forwardRef<any, MapViewProps>(({
   const handleStateClick = (stateName: string) => {
     setSelectedState(stateName);
     setLevel('state');
+    
+    // Broadcast geographic target selection cleanly up to parent shell
+    window.dispatchEvent(new CustomEvent('region-select-update', { detail: stateName }));
     
     // Find state feature to pass to zoomToState
     const norm = normalizeStateName(stateName);
@@ -718,6 +747,46 @@ const MapViewComponent = forwardRef<any, MapViewProps>(({
             </div>
           </div>
 
+          {/* REALISTIC AGENCY ALERTS OPERATIONAL WINDOW */}
+          {level === 'state' && selectedState && (
+            (() => {
+              const norm = normalizeStateName(selectedState);
+              const cleanS = Object.keys(STATE_DATA).find(k => k.toLowerCase() === norm);
+              const data = cleanS ? STATE_DATA[cleanS] : null;
+              if (!data) return null;
+              
+              const isRed = data.rain > 200 || data.temp > 42;
+              const isOrange = !isRed && (data.rain > 100 || data.temp > 38 || data.drought > 0.6);
+              
+              if (!isRed && !isOrange) return null;
+
+              const alertTitle = data.temp > 40 ? "SEVERE HEATWAVE CONDITIONS" : data.rain > 150 ? "FLASH FLOOD WARNING" : "EXTREME DROUGHT SITUATION";
+              const advisoryText = data.temp > 40 
+                ? "LST thresholds exceeded. Immediate risk of crop desiccation and power grid load anomalies across local subgrids."
+                : "Extreme precipitation anomaly detected. Critical risk of local catchment overflow and immediate structural inundation.";
+              const hoursRemaining = isRed ? "18h 42m 05s" : "44h 12m 30s";
+
+              return (
+                <div className="absolute top-16 left-4 z-40 bg-white border-l-4 border-l-accent-red border border-border-default p-4 rounded-xl shadow-xl max-w-[290px] font-sans">
+                  <div className="text-[10px] font-mono font-black tracking-widest text-accent-red flex items-center gap-2">
+                    <span className="w-1.5 h-1.5 rounded-full bg-accent-red inline-block" />
+                    IMD NATIONAL BULLETIN
+                  </div>
+                  <div className="mt-2 space-y-1">
+                    <div className="text-[12px] font-bold text-slate-900 tracking-tight">{alertTitle}</div>
+                    <p className="text-[10px] text-slate-600 leading-normal normal-case font-medium pt-0.5">
+                      {advisoryText}
+                    </p>
+                    <div className="pt-2.5 mt-2 border-t border-slate-100 flex flex-col gap-1">
+                      <div className="text-[9px] font-mono font-bold text-slate-400 uppercase tracking-wider">NEXT RESOURCE DEPLOYMENT DEADLINE:</div>
+                      <div className="text-accent-red font-mono font-bold text-[13px] tracking-wider">{hoursRemaining}</div>
+                    </div>
+                  </div>
+                </div>
+              );
+            })()
+          )}
+
           <button className="reset-view-btn" onClick={() => {
             if (level === 'state' && stateViewBoxRef.current) {
               animateViewBox(stateViewBoxRef.current);
@@ -748,8 +817,9 @@ const MapViewComponent = forwardRef<any, MapViewProps>(({
                     d={pathGen(f) || ''}
                     data-state={rawName}
                     fill={getColor(climateVal)}
-                    stroke="var(--border-bright)"
-                    strokeWidth={0.6}
+                    stroke="#ffffff"
+                    strokeWidth={0.8}
+                    style={{ transition: 'fill 600ms ease-in-out' }} // Smooth color morphing transition animation
                     onClick={() => handleStateClick(rawName)}
                   />
                 );
@@ -775,8 +845,8 @@ const MapViewComponent = forwardRef<any, MapViewProps>(({
                         d={pathGen(f) || ''}
                         data-district={dName}
                         fill={isSelected ? 'var(--accent-blue)' : getColor(dVal)}
-                        stroke={isSelected ? 'var(--text-primary)' : 'rgba(255,255,255,0.2)'}
-                        strokeWidth={isSelected ? 1.4 : 0.8}
+                        stroke={isSelected ? '#0f172a' : 'rgba(255,255,255,0.4)'}
+                        strokeWidth={isSelected ? 1.4 : 0.6}
                         onClick={() => handleDistrictClick(dName)}
                       />
                     );
@@ -847,6 +917,17 @@ const MapViewComponent = forwardRef<any, MapViewProps>(({
           </div>
         )}
 
+        {/* Core layout animations vector compiler */}
+        <style>{`
+          @keyframes ventuskyFlow {
+            0% {
+              stroke-dashoffset: 100;
+            }
+            100% {
+              stroke-dashoffset: 0;
+            }
+          }
+        `}</style>
       </div>
 
     </div>
@@ -1075,6 +1156,9 @@ const DistrictIMDTab = ({ district, state }: { district: string, state: string }
 };
 
 const DistrictAgriTab = ({ district, state }: { district: string, state: string }) => {
+  const [isDispatching, setIsDispatching] = useState(false);
+  const [dispatchSuccess, setDispatchSuccess] = useState(false);
+
   const seed = district.length;
   const cropStress = Math.round(25 + (seed % 7) * 8);
   const floodRisk = Math.round(15 + (seed % 5) * 16);
@@ -1091,7 +1175,7 @@ const DistrictAgriTab = ({ district, state }: { district: string, state: string 
 
   const drawProgress = (val: number, colorClass: string) => {
     return (
-      <div className="w-full bg-bg-void/40 h-2 rounded-full overflow-hidden border border-white/5 relative">
+      <div className="w-full bg-slate-100 h-2 rounded-full overflow-hidden border border-slate-200 relative">
         <div className={`h-full ${colorClass} rounded-full`} style={{ width: `${val}%` }} />
       </div>
     );
@@ -1130,12 +1214,106 @@ const DistrictAgriTab = ({ district, state }: { district: string, state: string 
       </div>
 
       <div className="bg-bg-elevated borderMain border-l-4 border-l-accent-orange border border-[var(--border-default)] p-4 rounded-xl flex flex-col gap-2">
-        <span className="text-[9px] font-display font-black text-accent-orange uppercase tracking-wider leading-none">
-          Agronomic Advisory Advisory System
-        </span>
+        <div className="flex justify-between items-center w-full">
+          <span className="text-[9.5px] font-display font-black text-accent-orange uppercase tracking-wider leading-none">
+            Agronomic Advisory System
+          </span>
+          <span className="text-[8px] bg-emerald-50 text-emerald-700 border border-emerald-200 px-1.5 py-0.5 rounded font-mono font-black animate-pulse">
+            WHATSAPP EDGE READY
+          </span>
+        </div>
+        
         <p className="text-[10px] text-[var(--text-secondary)] mt-1.5 leading-relaxed font-mono uppercase">
           {advisory}
         </p>
+
+        {/* CONDITIONALLY UNLOCKED LAST-MILE VOICE BROADCAST BUTTON */}
+        {(floodRisk > 60 || cropStress > 60) && (
+          <div className="mt-3 pt-3 border-t border-slate-100 flex flex-col gap-2">
+            <div className="text-[8px] font-mono font-bold text-slate-400 uppercase tracking-wider">
+              LAST-MILE AUDIO BROADCAST (ILLITERATE INCLUSION NODE)
+            </div>
+            <div className="flex gap-2">
+              <button
+                disabled={isDispatching || dispatchSuccess}
+                onClick={() => {
+                  // DIRECT BROWSER COMPLIANT NEURAL SPEECH SYNTHESIS ENGINE ACCELERATION
+                  if ('speechSynthesis' in window) {
+                    window.speechSynthesis.cancel(); // Flush stuck queues immediately
+                    
+                    const warningText = "चेतावनी: जैसलमेर में भारी बाढ़ का खतरा है। कृपया अपने खेत के बांधों को खोलें ताकि फसल का नुकसान न हो।";
+                    const utterance = new SpeechSynthesisUtterance(warningText);
+                    
+                    // Force clean Indian Hindi locale bindings
+                    utterance.lang = 'hi-IN';
+                    utterance.rate = 0.85;
+                    utterance.volume = 1.0;
+
+                    // Fetch live voices array
+                    const systemVoices = window.speechSynthesis.getVoices();
+                    
+                    // Explicitly bind to an active Indian voice engine if available in browser memory
+                    const localizedVoice = systemVoices.find(v => v.lang.includes('hi-IN') || v.lang.includes('hi_IN'));
+                    if (localizedVoice) {
+                      utterance.voice = localizedVoice;
+                    }
+
+                    // Explicitly fire speech channel output
+                    window.speechSynthesis.speak(utterance);
+                  } else {
+                    console.warn("Speech synthesis interface not active or blocked by host browser protocols.");
+                  }
+
+                  setIsDispatching(true);
+                  setTimeout(() => {
+                    setIsDispatching(false);
+                    setDispatchSuccess(true);
+                  }, 1200);
+                }}
+                className={`flex-1 py-2 rounded-lg text-[9px] font-mono font-black uppercase tracking-wider border transition-all cursor-pointer flex items-center justify-center gap-1.5 ${
+                  dispatchSuccess 
+                    ? "bg-emerald-50 border-emerald-300 text-emerald-700 font-extrabold"
+                    : "bg-emerald-600 hover:bg-emerald-700 border-transparent text-white shadow-sm"
+                }`}
+              >
+                {isDispatching ? "🔄 SYNTHESIZING LOCAL AUDIO PLUME..." : dispatchSuccess ? "✅ WHATSAPP VOICE BROADCAST DISPATCHED" : "🔊 DISPATCH WHATSAPP VOICE NOTE"}
+              </button>
+            </div>
+            
+            {dispatchSuccess && (
+              <div className="p-3 rounded-xl bg-slate-50 border border-slate-200 flex flex-col gap-2 animate-fade-in text-left">
+                <div className="flex justify-between items-center">
+                  <span className="text-[8px] font-black text-slate-500 font-mono">LIVE LOCAL CHANNELS AUDIO FEED (NEURAL HINDI):</span>
+                  <button 
+                    onClick={() => {
+                      if ('speechSynthesis' in window) {
+                        window.speechSynthesis.cancel();
+                        const warningText = "चेतावनी: जैसलमेर में भारी बाढ़ का खतरा है। कृपया अपने खेत के बांधों को खोलें ताकि फसल का नुकसान न हो।";
+                        const utterance = new SpeechSynthesisUtterance(warningText);
+                        utterance.lang = 'hi-IN';
+                        utterance.rate = 0.85;
+                        utterance.volume = 1.0;
+
+                        const systemVoices = window.speechSynthesis.getVoices();
+                        const localizedVoice = systemVoices.find(v => v.lang.includes('hi-IN') || v.lang.includes('hi_IN'));
+                        if (localizedVoice) {
+                          utterance.voice = localizedVoice;
+                        }
+                        window.speechSynthesis.speak(utterance);
+                      }
+                    }}
+                    className="px-2 py-0.5 rounded bg-emerald-100 border border-emerald-300 text-emerald-800 text-[8px] font-mono font-bold hover:bg-emerald-200 cursor-pointer"
+                  >
+                    ▶ REPLAY AUDIO BROADCAST
+                  </button>
+                </div>
+                <p className="text-[10px] font-mono font-extrabold text-slate-700 tracking-wide bg-white border border-slate-200 p-2 rounded-lg leading-relaxed">
+                  "चेतावनी: जैसलमेर में भारी बाढ़ का खतरा है (७९%)। कृपया अपने खेत के बांधों को खोलें ताकि फसल का नुकसान न हो।"
+                </p>
+              </div>
+            )}
+          </div>
+        )}
       </div>
     </div>
   );
@@ -1192,14 +1370,14 @@ const DistrictAnalysisTab = ({ district, state }: { district: string, state: str
         <div className="relative w-full aspect-[4/3] flex items-center justify-center mt-2 max-w-[280px]">
           <svg className="w-full h-full" viewBox="0 0 220 200">
             {[20, 40, 65].map((r, i) => (
-              <polygon key={i} points={polyPoints(r)} fill="none" stroke="rgba(255,255,255,0.06)" strokeWidth="1" />
+              <polygon key={i} points={polyPoints(r)} fill="none" stroke="#cbd5e1" strokeWidth="1" />
             ))}
 
             {angles.map((a, i) => (
-              <line key={i} x1="110" y1="100" x2={110 + 65 * Math.cos(a)} y2={100 + 65 * Math.sin(a)} stroke="rgba(255,255,255,0.05)" strokeWidth="1" />
+              <line key={i} x1="110" y1="100" x2={110 + 65 * Math.cos(a)} y2={100 + 65 * Math.sin(a)} stroke="#cbd5e1" strokeWidth="1" />
             ))}
 
-            <polygon points={filledPoints} fill="rgba(139,92,246,0.18)" stroke="rgba(139,92,246,0.85)" strokeWidth="1.8" />
+            <polygon points={filledPoints} fill="rgba(109,40,217,0.12)" stroke="rgba(109,40,217,0.85)" strokeWidth="1.8" />
 
             {metrics.map((m, idx) => {
               const r = (m / 100) * 65;
@@ -1215,7 +1393,7 @@ const DistrictAnalysisTab = ({ district, state }: { district: string, state: str
               const anchor = Math.abs(Math.cos(a)) < 0.1 ? "middle" : Math.cos(a) > 0 ? "start" : "end";
 
               return (
-                <text key={idx} x={x} y={y + 3} fill="var(--text-secondary)" fontSize="7px" fontFamily="monospace" fontWeight="bold" textAnchor={anchor}>
+                <text key={idx} x={x} y={y + 3} fill="#334155" fontSize="7px" fontFamily="monospace" fontWeight="bold" textAnchor={anchor}>
                   {label}
                 </text>
               );

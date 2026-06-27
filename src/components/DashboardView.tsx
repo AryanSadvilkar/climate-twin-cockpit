@@ -1,11 +1,11 @@
 import React, { useState, useEffect, useRef, useMemo } from "react";
-import { 
-  Thermometer, 
-  CloudRain, 
-  Wind, 
-  Gauge, 
-  Play, 
-  Pause, 
+import {
+  Thermometer,
+  CloudRain,
+  Wind,
+  Gauge,
+  Play,
+  Pause,
   RefreshCw,
   Search,
   MapPin,
@@ -23,6 +23,19 @@ import {
 import { SimulationParams, WeatherLayer } from "../types";
 import { CITIES_INDEX } from "../data";
 import MapView from "./MapView";
+
+const getLiveMosdacMetric = (layer: string, offset: number) => {
+  const baseMetrics: Record<string, { label: string; val: string; status: string }> = {
+    temp: { label: "INSAT-3DR LST", val: `${(27.8 + offset).toFixed(1)}°C`, status: "THERMAL IMAGER ENERGETIC" },
+    precip: { label: "INSAT-3D RHEM", val: `${Math.round(842 * (1 + offset * 0.05))}mm`, status: "HYDRO-RETRIEVAL CONCURRENT" },
+    wind: { label: "MOSDAC SCATSAT", val: `${Math.round(24 + offset * 2)} km/h`, status: "CYCLONIC CYCLES TRACKED" },
+    pressure: { label: "MET-GRID SYNOP", val: `${Math.round(1008 - offset * 1.5)} hPa`, status: "BAROMETRIC ANOMALY DETECTED" },
+    humidity: { label: "SATELLITE VWC", val: `${Math.max(10, Math.min(100, Math.round(72 + offset * 3)))}%`, status: "SUBSURFACE MOISTURE GRADIENT" },
+    drought: { label: "NDVI STRESS", val: `${(0.32 + (offset > 0 ? offset * 0.04 : 0)).toFixed(2)} idx`, status: "AGRONOMIC SCARCITY RADIAL" },
+    cloud: { label: "INSAT OLR", val: `${Math.max(0, Math.min(100, Math.round(65 + offset * 4)))}%`, status: "ALBEDO REFLECTANCE READ" }
+  };
+  return baseMetrics[layer] || { label: "MOSDAC FEED", val: "TRACKING", status: "NOMINAL MATRIX SYSTEM" };
+};
 
 // Map configurations for atmospheric layers
 interface LayerItem {
@@ -49,6 +62,7 @@ interface DashboardViewProps {
   setActiveLayer: (layer: WeatherLayer) => void;
   simulation: SimulationParams;
   setSimulation: (sim: SimulationParams) => void;
+  isPresentationMode?: boolean;
 }
 
 export type MapLevel = 'india' | 'state' | 'district';
@@ -57,9 +71,26 @@ export default function DashboardView({
   activeLayer,
   setActiveLayer,
   simulation,
-  setSimulation
+  setSimulation,
+  isPresentationMode = false
 }: DashboardViewProps) {
   const mapRef = useRef<any>(null);
+
+  const [isMissionControlLocal, setIsMissionControlLocal] = useState(false);
+  const isMissionControl = isPresentationMode || isMissionControlLocal;
+  const setIsMissionControl = setIsMissionControlLocal;
+
+  useEffect(() => {
+    const handleMissionToggle = (e: KeyboardEvent) => {
+      // Intercept 'M' key presses unless typing inside a form input element
+      if (e.key.toLowerCase() === 'm' && !(e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement)) {
+        // Toggle your pre-existing, optimized state handler function
+        setIsMissionControlLocal(prev => !prev); 
+      }
+    };
+    window.addEventListener('keydown', handleMissionToggle);
+    return () => window.removeEventListener('keydown', handleMissionToggle);
+  }, []);
 
   // Map Navigation Level State
   const [level, setLevel] = useState<MapLevel>("india");
@@ -140,370 +171,284 @@ export default function DashboardView({
   }, [simulation.tempOffset, driftValue]);
 
   return (
-    <div className="flex flex-col h-full w-full overflow-hidden bg-bg-void text-text-primary select-none">
-      
-      {/* PROBLEM 6 — KPI TOP STRIP */}
-      <header className="h-[52px] w-full bg-bg-surface border-b border-border-default flex items-center justify-between px-6 select-none shrink-0">
-        <div className="flex items-center gap-5 h-full text-[11px] uppercase tracking-wider">
-          <div className="flex items-center gap-1.5 h-full">
-            <span className="font-display font-medium text-text-muted">🌡 MEAN TEMP:</span>
-            <span className="text-accent-cyan font-mono font-bold">27.8°C</span>
+    <div className="flex flex-col h-full w-full overflow-hidden bg-transparent text-text-primary select-none font-mono relative">
+
+      {/* MISSION CONTROL HEAD ACTION STRIP */}
+      {!isPresentationMode && (
+        <header className="h-[52px] w-full bg-bg-surface border-b border-border-default flex items-center justify-between px-6 select-none shrink-0">
+          <div className="flex items-center gap-5 text-[10.5px] uppercase tracking-wider">
+            <div className="flex items-center gap-2 bg-accent-blue/10 px-3 py-1 border border-accent-blue/20 rounded">
+              <span className="w-2 h-2 rounded-full bg-accent-green inline-block animate-ping" />
+              <span className="text-accent-blue font-black tracking-widest">MOSDAC LIVE STREAM</span>
+            </div>
+
+            <div className="hidden md:flex items-center gap-1.5">
+              <span className="text-text-muted">ACTIVE SATELLITE:</span>
+              <span className="text-accent-cyan font-bold">INSAT-3DR [GEOCENTRIC OVERLAY]</span>
+            </div>
+
+            <div className="w-[1px] h-3 bg-border-default hidden md:block" />
+
+            <div className="flex items-center gap-1.5">
+              <span className="text-text-muted">ORBIT PAYLOAD:</span>
+              <span className="text-text-primary font-bold">IMAGER & SOUNDER ACTIVE</span>
+            </div>
           </div>
-          
-          <div className="w-[1px] h-3 bg-border-default" />
 
-          <div className="flex items-center gap-1.5 h-full">
-            <span className="font-display font-medium text-text-muted">🌧 PRECIPITATION:</span>
-            <span className="text-accent-cyan font-mono font-bold">842mm</span>
-          </div>
-
-          <div className="w-[1px] h-3 bg-border-default" />
-
-          <div className="flex items-center gap-1.5 h-full">
-            <span className="font-display font-medium text-text-muted">⚡ ALERTS:</span>
-            <span className={`font-mono font-bold ${simulation.tempOffset > 2 ? "text-accent-red animate-pulse" : "text-accent-green"}`}>
-              {simulation.tempOffset > 2 ? "EXTREME HEAT" : "NOMINAL"}
+          {/* PRESENTATION TOGGLE ACTION BUTTON */}
+          <div className="flex items-center gap-4">
+            <span className="text-accent-green font-bold bg-bg-elevated border border-accent-green/20 px-2 py-0.5 rounded text-[10px] hidden sm:inline-block">
+              98.4% DATA LOCK
             </span>
           </div>
+        </header>
+      )}
 
-          <div className="w-[1px] h-3 bg-border-default" />
-
-          <div className="flex items-center gap-1.5 h-full">
-            <span className="w-1.5 h-1.5 rounded-full bg-accent-green inline-block animate-pulse" />
-            <span className="text-text-primary font-mono font-black">TODAY</span>
-          </div>
-        </div>
-
-        <div className="flex items-center gap-2 h-full text-[11px]">
-          <span className="font-display font-medium text-text-muted">✦ AI CONFIDENCE:</span>
-          <span className="text-accent-cyan font-mono font-bold bg-bg-elevated border border-border-bright/30 px-2 py-0.5 rounded-md text-[10px]">
-            92%
-          </span>
-        </div>
-      </header>
-
-      {/* DASHBOARD WORKSPACE (Sidebar Left + Map centerpiece + Panel Right) */}
-      <div 
-        className={`dashboard-layout ${level !== 'india' ? 'map-fullscreen' : ''} w-full overflow-hidden relative`}
-        style={{ height: "calc(100vh - 56px - 52px - 64px)" }}
+      {/* OVERHAULED WORKSPACE BLOCK */}
+      <div
+        className="flex w-full overflow-hidden relative"
+        style={{ height: isPresentationMode ? "100%" : "calc(100vh - 52px - 64px)" }}
       >
-        
-        {/* PROBLEM 5 — LEFT SIDEBAR LAYER SELECTOR (width 260px) */}
-        <aside className="left-sidebar w-[260px] shrink-0 bg-bg-surface border-r border-border-default p-4 flex flex-col justify-between overflow-y-auto hide-scrollbar z-10">
-          <div className="flex flex-col gap-4">
-            
-            {/* GIS weather telemetry header */}
-            <div className="flex flex-col gap-0.5 border-b border-border-default pb-2">
-              <span className="text-[10px] font-display font-black text-text-primary uppercase tracking-widest leading-none">
-                ATMOSPHERIC LAYER
-              </span>
-              <p className="text-[8.5px] font-mono text-text-secondary leading-none mt-1">
-                Select GIS weather telemetry
-              </p>
-            </div>
 
-            {/* Selector list */}
-            <div className="flex flex-col gap-1">
-              {LAYERS_LIST.map((item) => {
-                const isActive = activeLayer === item.id;
-                const Icon = item.icon;
-
-                return (
-                  <button
-                    key={item.id}
-                    onClick={() => setActiveLayer(item.id as WeatherLayer)}
-                    className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-lg border transition-all cursor-pointer ${
-                      isActive 
-                        ? "bg-accent-blue/10 border-accent-blue/40 text-text-primary font-black" 
-                        : "bg-bg-elevated/30 border-transparent text-text-secondary hover:bg-bg-elevated/40 hover:text-text-primary"
-                    }`}
-                    style={isActive ? { borderLeft: "3px solid var(--accent-blue)" } : undefined}
-                  >
-                    <div className="flex items-center gap-2.5">
-                      <Icon className={`w-3.5 h-3.5 ${isActive ? "text-accent-blue" : "text-text-secondary"}`} />
-                      <span className="text-[11px] font-bold tracking-wide uppercase">{item.name}</span>
-                    </div>
-                    <span className="text-[8px] font-mono font-bold bg-bg-deep border border-border-default text-accent-cyan px-1.5 py-0.5 rounded leading-none">
-                      {item.unit}
-                    </span>
-                  </button>
-                );
-              })}
-            </div>
-
-          </div>
-
-          {/* WHAT-IF SIMULATOR */}
-          <div className="bg-bg-elevated/35 whatif-card border border-border-default p-3.5 rounded-xl flex flex-col gap-3 mt-4 what-if-section">
-            <button
-              onClick={() => setIsSimulationOpen(prev => !prev)}
-              className="w-full flex items-center justify-between text-left focus:outline-none cursor-pointer"
-            >
-              <div className="flex items-center gap-1.5">
-                <Settings className="w-3.5 h-3.5 text-accent-blue shrink-0" />
-                <span className="text-[10px] font-display font-black text-text-primary tracking-widest uppercase">
-                  WHAT-IF SIMULATOR
-                </span>
+        {/* SIDEBAR LEFT: HIDDEN IN MISSION MODE TO EXPOSE MAP */}
+        {!isMissionControl && (
+          <aside className="left-sidebar w-[260px] shrink-0 bg-bg-surface border-r border-border-default p-4 flex flex-col justify-between overflow-y-auto hide-scrollbar z-10">
+            <div className="flex flex-col gap-4">
+              <div className="flex flex-col gap-0.5 border-b border-border-default pb-2">
+                <span className="text-[10px] font-display font-black text-text-primary uppercase tracking-widest">ATMOSPHERIC LAYER</span>
+                <p className="text-[8.5px] text-text-secondary mt-1">Select GIS weather telemetry</p>
               </div>
-              {isSimulationOpen ? <ChevronUp className="w-3.5 h-3.5 text-text-secondary" /> : <ChevronDown className="w-3.5 h-3.5 text-text-secondary" />}
-            </button>
 
-            {isSimulationOpen && (
-              <div className="space-y-4 mt-1">
-                {/* Temp shift slider */}
+              <div className="flex flex-col gap-1">
+                {LAYERS_LIST.map((item) => {
+                  const isActive = activeLayer === item.id;
+                  const Icon = item.icon;
+                  return (
+                    <button
+                      key={item.id}
+                      onClick={() => setActiveLayer(item.id as WeatherLayer)}
+                      className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-lg border transition-all cursor-pointer ${isActive ? "bg-accent-blue/10 border-accent-blue/40 text-text-primary font-black" : "bg-bg-elevated/30 border-transparent text-text-secondary hover:bg-bg-elevated/40"
+                        }`}
+                    >
+                      <div className="flex items-center gap-2.5">
+                        <Icon className="w-3.5 h-3.5" />
+                        <span className="text-[11px] font-bold tracking-wide uppercase">{item.name}</span>
+                      </div>
+                      <span className="text-[8px] font-mono text-accent-cyan px-1.5 py-0.5 bg-bg-deep rounded">{item.unit}</span>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            <div className="bg-bg-elevated/35 border border-border-default p-3.5 rounded-xl">
+              <div className="flex items-center gap-1.5 mb-2">
+                <Settings className="w-3.5 h-3.5 text-accent-blue" />
+                <span className="text-[10px] font-bold tracking-widest uppercase">WHAT-IF SIMULATOR</span>
+              </div>
+              <div className="space-y-3">
                 <div>
-                  <div className="flex justify-between text-[8px] font-mono text-text-secondary mb-1">
+                  <div className="flex justify-between text-[9.5px] font-mono font-black text-slate-900 mb-1">
                     <span>TEMP SHIFT</span>
-                    <span className="text-accent-blue font-bold">
-                      {params.tempOffset > 0 ? "+" : ""}{params.tempOffset.toFixed(1)}°C
-                    </span>
+                    <span className="text-accent-blue font-black">{params.tempOffset > 0 ? "+" : ""}{params.tempOffset.toFixed(1)}°C</span>
                   </div>
                   <input
-                    type="range"
-                    min="-5"
-                    max="5"
-                    step="0.1"
-                    value={params.tempOffset}
-                    onChange={(e) => setParams(prev => ({ ...prev, tempOffset: parseFloat(e.target.value) }))}
+                    type="range" min="-5" max="5" step="0.1" value={params.tempOffset}
+                    onChange={(e) => {
+                      const val = parseFloat(e.target.value);
+                      setParams(prev => ({ ...prev, tempOffset: val }));
+                    }}
                     className="w-full cursor-pointer accent-accent-blue"
                   />
                 </div>
-
-                {/* Rain scale slider */}
                 <div>
-                  <div className="flex justify-between text-[8px] font-mono text-text-secondary mb-1">
+                  <div className="flex justify-between text-[9.5px] font-mono font-black text-slate-900 mb-1">
                     <span>RAIN SCALE</span>
-                    <span className="text-accent-blue font-bold">{params.rainIntensity}%</span>
+                    <span className="text-accent-blue font-black">{params.rainIntensity}%</span>
                   </div>
                   <input
-                    type="range"
-                    min="0"
-                    max="200"
-                    step="1"
-                    value={params.rainIntensity}
-                    onChange={(e) => setParams(prev => ({ ...prev, rainIntensity: parseInt(e.target.value) }))}
+                    type="range" min="0" max="200" step="1" value={params.rainIntensity}
+                    onChange={(e) => {
+                      const val = parseInt(e.target.value);
+                      setParams(prev => ({ ...prev, rainIntensity: val }));
+                    }}
                     className="w-full cursor-pointer accent-accent-blue"
                   />
                 </div>
-
-                {/* Recalculate CTA */}
-                {isRecalculating ? (
-                  <div className="w-full py-2 px-1 bg-bg-void/80 rounded-lg border border-accent-blue/10">
-                    <div className="text-[8px] font-mono text-accent-blue animate-pulse text-center font-extrabold uppercase truncate px-1">
-                      {recalcTexts[recalcStep]}
-                    </div>
-                  </div>
-                ) : (
-                  <button
-                    onClick={handleRecalculate}
-                    className="w-full py-2 bg-accent-blue hover:bg-opacity-95 text-white text-[10px] font-display font-bold rounded-lg hover:shadow-lg active:scale-95 duration-150 flex items-center justify-center gap-1.5 cursor-pointer leading-none uppercase tracking-wider"
-                  >
-                    <RefreshCw className="w-3 h-3 animate-spin" style={{ animationDuration: "6s" }} />
-                    <span>Recalculate Grids</span>
+                
+                <div className="flex flex-col gap-2 pt-1">
+                  <button onClick={handleRecalculate} className="w-full py-2 bg-accent-blue text-white text-[10px] font-bold rounded-lg uppercase tracking-wider cursor-pointer transition-all active:scale-[0.98]">
+                    Recalculate Grids
                   </button>
-                )}
+                  <button 
+                    onClick={() => {
+                      setSimulation(params);
+                      window.dispatchEvent(new CustomEvent('trigger-report-tab'));
+                    }} 
+                    className="w-full py-2 bg-white border border-border-bright text-text-primary text-[10px] font-bold rounded-lg uppercase tracking-wider hover:bg-bg-deep transition-all cursor-pointer flex items-center justify-center gap-1.5 active:scale-[0.98]"
+                  >
+                    <span>Synthesize Briefing</span>
+                  </button>
+                </div>
               </div>
-            )}
-          </div>
-        </aside>
+            </div>
+          </aside>
+        )}
 
-        {/* CENTER PANE: FULL SCALE INDIA CLIMATE MAP */}
-        <section className="map-center flex-1 relative h-full bg-bg-void overflow-hidden">
-          <MapView
-            ref={mapRef}
-            mode="dashboard"
-            activeLayerId={activeLayer}
-            setActiveLayerId={setActiveLayer}
-            simulation={simulation}
-            activeTimeIndex={timelineIndex}
-            setActiveTimeIndex={setTimelineIndex}
-            level={level}
-            onLevelChange={setLevel}
-          />
+        {/* ISRO MISSION INTEL NODE PANEL */}
+        {isMissionControl && level !== 'district' && (
+          <div className="absolute top-16 left-4 z-40 bg-white/90 backdrop-blur-md p-3 rounded-xl border border-slate-200 shadow-md font-mono text-[9px] w-56 space-y-2 select-none">
+            <div className="flex justify-between border-b pb-1 text-slate-500 font-bold uppercase tracking-wider">
+              <span>Telemetry Index</span>
+              <span className="text-emerald-600">● LIVE</span>
+            </div>
+            <div className="space-y-1 text-slate-700">
+              <div className="flex justify-between border-b border-slate-100/60 pb-1">
+                <span className="font-semibold">NEXT PASS:</span>
+                <span className="text-accent-orange font-black">04h 18m 22s</span>
+              </div>
+              <div className="flex justify-between border-b border-slate-100/60 pb-1">
+                <span className="font-semibold">PAYLOAD:</span>
+                <span className="text-text-primary font-black">INSAT-VHRR IMAGER</span>
+              </div>
+              <div className="flex justify-between border-b border-slate-100/60 pb-1">
+                <span className="font-semibold">IMAGE SWATH:</span>
+                <span className="text-text-primary font-black">6°N to 38°N ACCURATE</span>
+              </div>
+              <div className="flex justify-between border-b border-slate-100/60 pb-1">
+                <span className="font-semibold">RESOLUTION:</span>
+                <span className="text-accent-green font-black">4KM RADIOMETER</span>
+              </div>
+              <div className="flex justify-between pt-1">
+                <span className="font-semibold">SPECTRUM:</span>
+                <span className="text-accent-cyan font-black">THERMAL INFRARED</span>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* THE PRIMARY INTERACTIVE CLIMATE DRAW CANVAS PANEL */}
+        <section className="flex-1 relative h-full bg-bg-void overflow-hidden bg-transparent">
+          {/* CINEMATIC MISSION CONTROL HEADS-UP OVERLAY */}
+          {isPresentationMode && (
+            <div className="absolute inset-0 pointer-events-none p-6 flex flex-col justify-between z-50 font-mono text-white select-none">
+              {/* Top Operational Status Banner */}
+              <div className="w-full flex justify-between items-start bg-slate-900/95 border border-slate-800 p-4 rounded-2xl backdrop-blur-md shadow-2xl">
+                <div className="flex items-center gap-3">
+                  <span className="w-2.5 h-2.5 rounded-full bg-red-500 animate-ping shrink-0" />
+                  <div className="text-left font-mono">
+                    <h2 className="text-[12px] font-black tracking-widest uppercase text-white">ISRO COMBINED OPERATIONS DESK</h2>
+                    <p className="text-[9px] text-slate-400 font-bold uppercase mt-0.5">TARGET COMPILER FEED: INSAT-3DR GEOSTATIONARY SATELLITE REALTIME INGRESS</p>
+                  </div>
+                </div>
+                <div className="text-[9px] bg-slate-950 border border-slate-800 p-2 rounded-xl text-emerald-400 font-extrabold tracking-widest font-mono text-right">
+                  📡 NEXT CONFIRMATION PASS: <span className="text-white font-bold">04H 22M</span>
+                </div>
+              </div>
+
+              {/* Bottom Status Ticker */}
+              <div className="w-full flex justify-between items-center text-[9px] text-slate-400 bg-slate-900/95 border border-slate-800 p-3 rounded-xl backdrop-blur-md shadow-2xl font-mono">
+                <div className="flex gap-4 uppercase font-bold">
+                  <span className="text-accent-blue font-black">[BHUVAN GIS INTERPOLATION: ON]</span>
+                  <span className="text-emerald-500 font-black">[RESOURCESAT-2A CROP INDEX: LIVE]</span>
+                  <span className="text-amber-400 font-black animate-pulse">[⚠️ COGNITIVE TWIN DETECT ACTIVE]</span>
+                </div>
+                <div className="text-slate-500 font-bold">PRESS 'M' TO EXIT OPERATIONS EXECUTIVE MODE</div>
+              </div>
+            </div>
+          )}
+
+          <div className="w-full h-full relative flex items-center justify-center p-4">
+            <MapView
+              ref={mapRef} mode="dashboard" activeLayerId={activeLayer} setActiveLayerId={setActiveLayer}
+              simulation={simulation} activeTimeIndex={timelineIndex} setActiveTimeIndex={setTimelineIndex}
+              level={level} onLevelChange={setLevel}
+            />
+          </div>
         </section>
 
-        {/* PROBLEM 2 — RIGHT PANEL (width 280px) */}
-        <aside className="right-panel w-[280px] shrink-0 bg-bg-surface border-l border-border-default p-4 flex flex-col justify-between overflow-y-auto hide-scrollbar z-10">
-          <div className="flex flex-col gap-4">
-            
-            {/* SURFACE ANALYSIS CARD with sparkline */}
-            <div className="bg-bg-elevated/35 surface-analysis-card border border-border-default p-4 rounded-xl border-l-4 border-l-accent-blue flex flex-col gap-3.5">
-              <h3 className="text-[10px] font-display font-black text-text-primary tracking-widest uppercase border-b border-border-default pb-2">
-                Surface Analysis
-              </h3>
-
-              <div className="grid grid-cols-2 gap-3 pb-1">
-                <div>
-                  <p className="text-[8.5px] text-text-secondary uppercase mb-1">
-                    LST (Land)
-                  </p>
-                  <p className="text-[12px] font-mono font-bold text-text-primary">
-                    {computedLST}°C
-                  </p>
+        {/* SIDEBAR RIGHT: HIDDEN IN MISSION MODE TO EXPOSE MAP */}
+        {!isMissionControl && (
+          <aside className="right-panel w-[280px] shrink-0 bg-bg-surface border-l border-border-default p-4 flex flex-col justify-between overflow-y-auto hide-scrollbar z-10">
+            <div className="flex flex-col gap-4">
+              <div className="bg-bg-elevated/35 border border-border-default p-4 rounded-xl border-l-4 border-l-accent-blue flex flex-col gap-3.5">
+                <h3 className="text-[10px] font-bold tracking-widest uppercase border-b border-border-default pb-2">Surface Analysis</h3>
+                <div className="grid grid-cols-2 gap-3 pb-1">
+                  <div><p className="text-[8.5px] text-text-secondary uppercase mb-1">LST (Land)</p><p className="text-[12px] font-mono font-bold">{computedLST}°C</p></div>
+                  <div><p className="text-[8.5px] text-text-secondary uppercase mb-1">SST (Sea)</p><p className="text-[12px] font-mono font-bold text-accent-cyan">{computedSST}°C</p></div>
                 </div>
-                <div>
-                  <p className="text-[8.5px] text-text-secondary uppercase mb-1">
-                    SST (Sea)
-                  </p>
-                  <p className="text-[12px] font-mono font-bold text-accent-cyan">
-                    {computedSST}°C
-                  </p>
+                <div className="h-10 w-full flex items-end">
+                  <svg className="w-full h-full" preserveAspectRatio="none" viewBox="0 0 100 45">
+                    <path d={`M0 45 ` + sparklineValues.map((val, i) => `L ${(i / (sparklineValues.length - 1)) * 100} ${45 - val}`).join(" ") + ` L 100 45 Z`} fill="rgba(59, 130, 246, 0.08)" stroke="var(--accent-blue)" strokeWidth="2.0" />
+                  </svg>
                 </div>
               </div>
 
-              {/* Sparkline graphics matching tokens */}
-              <div className="h-10 w-full flex items-end">
-                <svg className="w-full h-full pointer-events-none" preserveAspectRatio="none" viewBox="0 0 100 45">
-                  <path 
-                    d={`M0 45 ` + sparklineValues.map((val, i) => `L ${(i / (sparklineValues.length - 1)) * 100} ${45 - val}`).join(" ") + ` L 100 45 Z`}
-                    fill="rgba(59, 130, 246, 0.08)" 
-                    stroke="var(--accent-blue)" 
-                    strokeWidth="2.0"
-                  />
-                  <path 
-                    d={sparklineValues.map((val, i) => `L ${(i / (sparklineValues.length - 1)) * 100} ${45 - (val * 0.7 + 6)}`).join(" ").replace("L", "M")}
-                    fill="none" 
-                    stroke="var(--accent-cyan)" 
-                    strokeWidth="1.5"
-                    strokeDasharray="3 3"
-                  />
-                </svg>
-              </div>
-            </div>
-
-            {/* RADAR SYNCHRONOUS DATA CHANNELS */}
-            <div className="bg-bg-elevated/35 radar-card border border-border-default p-4 rounded-xl flex flex-col gap-3">
-              <div className="flex justify-between items-center border-b border-border-default pb-2">
-                <span className="text-[9.5px] font-display font-black text-text-primary tracking-widest uppercase flex items-center gap-1.5">
-                  <Radar className="w-3.5 h-3.5 text-accent-cyan" />
-                  RADAR CHANNEL
-                </span>
-                <span className="relative flex h-1.5 w-1.5">
-                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-accent-green opacity-75"></span>
-                  <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-accent-green"></span>
-                </span>
-              </div>
-
-              <div className="flex flex-col gap-2.5 text-[9px] font-mono text-text-secondary">
-                <div className="flex justify-between">
-                  <span>IMD-RADAR-4</span>
-                  <span className="text-accent-green font-bold">ACTIVE OK</span>
+              <div className="bg-bg-elevated/35 border border-border-default p-4 rounded-xl flex flex-col gap-3">
+                <div className="flex justify-between items-center border-b border-border-default pb-2">
+                  <span className="text-[9.5px] font-bold tracking-widest uppercase flex items-center gap-1.5"><Radar className="w-3.5 h-3.5 text-accent-cyan" />RADAR CHANNELS</span>
+                  <span className="w-1.5 h-1.5 rounded-full bg-accent-green" />
                 </div>
-                <div className="flex justify-between">
-                  <span>SATELLITE-7B</span>
-                  <span className="text-accent-green font-bold">ACTIVE OK</span>
-                </div>
-                <div className="flex justify-between text-accent-blue border-t border-border-default pt-1.5">
-                  <span>SYSTEM HEARTBEAT</span>
-                  <span>SYNCED</span>
+                <div className="flex flex-col gap-2.5 text-[9px] text-text-secondary">
+                  <div className="flex justify-between"><span>IMD-RADAR-4</span><span className="text-accent-green font-bold">ACTIVE OK</span></div>
+                  <div className="flex justify-between"><span>SATELLITE-7B</span><span className="text-accent-green font-bold">ACTIVE OK</span></div>
                 </div>
               </div>
             </div>
 
-            {/* SIMULATOR SLIDERS DUPLICATE GROUP */}
-            <div className="bg-bg-elevated/35 metric-card border border-border-default p-3.5 rounded-xl flex flex-col gap-3">
-              <div className="flex justify-between items-center border-b border-border-default pb-2">
-                <span className="text-[9.5px] font-display font-black text-text-primary tracking-widest uppercase">
-                  What-If Parameter Mod
-                </span>
-              </div>
-              <div className="space-y-3 pt-1 text-[9px] font-mono leading-none">
-                <div className="flex justify-between text-[8px]">
-                  <span className="text-text-secondary">TEMP OFFSET:</span>
-                  <span className="text-accent-orange font-bold">{simulation.tempOffset > 0 ? "+" : ""}{simulation.tempOffset.toFixed(1)}°C</span>
-                </div>
-                <div className="flex justify-between text-[8px]">
-                  <span className="text-text-secondary">RAIN SCALE:</span>
-                  <span className="text-accent-cyan font-bold">{simulation.rainIntensity}%</span>
-                </div>
-              </div>
+            <div className="text-[8px] text-text-secondary mt-auto flex flex-col gap-0.5 border-t border-border-default pt-3 uppercase">
+              <span>MODEL: CLIMATOTWIN v6.81</span>
+              <span>INGRESS BOUND: PORT 3000 COMPLIANT</span>
             </div>
+          </aside>
+        )}
 
+        {/* FLOATING MISSION METADATA LOG - VISIBLE IN FULLSCREEN PRESENTATION */}
+        {isMissionControl && level !== 'district' && (
+          <div className="absolute bottom-4 right-4 z-50 bg-white/95 backdrop-blur-md border border-border-default p-4 rounded-xl max-w-[260px] font-mono text-slate-900 shadow-2xl pointer-events-none">
+            <div className="text-[9px] font-black tracking-widest text-accent-blue uppercase mb-2">SYSTEM CONSOLE INPUT</div>
+            <div className="text-[8.5px] space-y-1 text-slate-600 uppercase font-semibold">
+              <div>&gt; CONNECTED TO MET-NET INGRESS</div>
+              <div>&gt; SHIFT ANOMALY DELTA: {params.tempOffset.toFixed(1)}°C</div>
+              <div>&gt; ACTIVE GEOMETRIC GRID LEVEL: LIVE MAP</div>
+              <div className="text-accent-green font-bold">&gt; GFS CYCLES RENDERING WITHOUT DRIFT</div>
+            </div>
           </div>
-
-          {/* SYSTEM METADATA BOTTOM FOOTER */}
-          <div className="text-[8px] font-mono text-text-secondary mt-auto flex flex-col gap-0.5 border-t border-border-default pt-3 leading-tight uppercase">
-            <span>MODEL: CLIMATOTWIN v6.81</span>
-            <span>INGRESS BOUND: PORT 3000 COMPLIANT</span>
-          </div>
-
-        </aside>
+        )}
 
       </div>
 
-      {/* PROBLEM 7 — TEMPORAL SLIDER (bottom bar) */}
-      <footer className="h-16 bg-bg-surface border-t border-border-default px-6 flex items-center justify-between z-20 shrink-0 font-mono text-text-primary select-none">
-        
-        {/* Play control */}
+      {/* TEMPORAL CHRONO TIMELINE PROGRESSION FOOTER CONTROLS */}
+      <footer className="h-16 bg-bg-surface border-t border-border-default px-6 flex items-center justify-between z-20 shrink-0 font-mono text-text-primary">
         <div className="flex items-center gap-3">
-          <button
-            onClick={() => setIsPlaying(!isPlaying)}
-            className="w-8 h-8 rounded-full bg-accent-blue hover:bg-opacity-90 active:scale-95 text-white flex items-center justify-center transition-all cursor-pointer shadow-md focus:outline-none"
-            title={isPlaying ? "Pause model progression loop" : "Play continuous model progression loop"}
-          >
+          <button onClick={() => setIsPlaying(!isPlaying)} className="w-8 h-8 rounded-full bg-accent-blue text-white flex items-center justify-center transition-all cursor-pointer shadow-md focus:outline-none">
             {isPlaying ? <Pause className="w-3.5 h-3.5 fill-white" /> : <Play className="w-3.5 h-3.5 fill-white ml-0.5" />}
           </button>
-          
           <div className="hidden lg:flex flex-col text-left leading-none">
             <span className="text-[10px] text-accent-cyan font-extrabold uppercase">Progression Engine</span>
             <span className="text-[7.5px] text-text-secondary uppercase mt-0.5">GFS auto cycles</span>
           </div>
         </div>
 
-        {/* Timeline dots system */}
         <div className="flex-1 max-w-2xl px-6 flex items-center gap-4.5">
           <div className="relative flex-1 h-1 bg-bg-elevated rounded-full">
-            <div 
-              className="absolute inset-y-0 left-0 bg-accent-blue rounded-full transition-all"
-              style={{ width: `${(timelineIndex / (TIMELINE_STEPS.length - 1)) * 100}%` }}
-            />
-            {/* Interactive dot triggers */}
+            <div className="absolute inset-y-0 left-0 bg-accent-blue rounded-full transition-all" style={{ width: `${(timelineIndex / (TIMELINE_STEPS.length - 1)) * 100}%` }} />
             <div className="absolute inset-x-0 -top-1.5 flex justify-between">
-              {TIMELINE_STEPS.map((step, idx) => {
-                const isActive = idx === timelineIndex;
-                return (
-                  <button
-                    key={step}
-                    onClick={() => {
-                      setTimelineIndex(idx);
-                      setIsPlaying(false);
-                    }}
-                    className={`w-3.5 h-3.5 rounded-full border-2 border-bg-surface cursor-pointer hover:scale-110 duration-100 transition-all ${
-                      isActive ? "bg-accent-blue ring-2 ring-accent-blue/30 scale-110" : "bg-text-muted"
-                    }`}
-                  />
-                );
-              })}
+              {TIMELINE_STEPS.map((step, idx) => (
+                <button key={step} onClick={() => { setTimelineIndex(idx); setIsPlaying(false); }} className={`w-3.5 h-3.5 rounded-full border-2 border-bg-surface cursor-pointer ${idx === timelineIndex ? "bg-accent-blue scale-110" : "bg-text-muted"}`} />
+              ))}
             </div>
           </div>
-
-          {/* Labels array to trigger timeline scale shifts in click */}
           <div className="flex gap-4 text-[9px] uppercase tracking-wide">
-            {TIMELINE_STEPS.map((step, idx) => {
-              const isActive = idx === timelineIndex;
-              return (
-                <button
-                  key={step}
-                  onClick={() => {
-                    setTimelineIndex(idx);
-                    setIsPlaying(false);
-                  }}
-                  className={`cursor-pointer transition-all leading-none font-bold ${
-                    isActive ? "text-accent-cyan font-black" : "text-text-secondary hover:text-text-primary"
-                  }`}
-                >
-                  {step}
-                </button>
-              );
-            })}
+            {TIMELINE_STEPS.map((step, idx) => (
+              <button key={step} onClick={() => { setTimelineIndex(idx); setIsPlaying(false); }} className={`cursor-pointer font-bold ${idx === timelineIndex ? "text-accent-cyan font-black" : "text-text-secondary"}`}>{step}</button>
+            ))}
           </div>
         </div>
 
-        {/* Current timeline frame output */}
-        <div className="text-[10px] font-bold text-text-primary shrink-0 font-mono uppercase">
+        <div className="text-[10px] font-bold text-text-primary shrink-0 uppercase">
           TIME FRAME: <span className="text-accent-cyan">{TIMELINE_STEPS[timelineIndex].toUpperCase()}</span>
         </div>
-
       </footer>
 
     </div>

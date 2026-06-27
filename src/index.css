@@ -2,42 +2,43 @@
 @import "tailwindcss";
 
 :root {
-  /* === CLIMATESYNC DESIGN TOKENS === */
-  --bg-void:        #050810;   /* deepest background */
-  --bg-deep:        #080e18;   /* page background */  
-  --bg-surface:     #0d1117;   /* cards, panels */
-  --bg-elevated:    #161b27;   /* hover states, inputs */
-  --border-default: rgba(255,255,255,0.06);
-  --border-bright:  rgba(99,179,237,0.25);
-  --border-green:   rgba(74,222,128,0.2);
+  /* === CLIMATESYNC EXECUTIVE LIGHT TOKENS === */
+  --bg-void:        #f8fafc;   /* Crisp light page canvas background */
+  --bg-deep:        #f1f5f9;   /* Workspace alignment container background */  
+  --bg-surface:     #ffffff;   /* Solid white analytics cards and panels */
+  --bg-elevated:    #e2e8f0;   /* Clean active control backgrounds and hover states */
+  --border-default: #cbd5e1;   /* Solid, clean panel borders */
+  --border-bright:  #94a3b8;   /* Active geospatial bounding boxes */
+  --border-green:   rgba(21,128,61,0.2);
 
-  --accent-blue:    #3b82f6;   /* primary actions, active states */
-  --accent-cyan:    #06b6d4;   /* secondary, data highlights */
-  --accent-green:   #10b981;   /* live/online status, safe */
-  --accent-orange:  #f97316;   /* warnings */
-  --accent-red:     #ef4444;   /* alerts, critical */
-  --accent-purple:  #8b5cf6;   /* AI/model indicators */
+  --accent-blue:    #1e3a8a;   /* Institutional Navy Blue - commands presentation authority */
+  --accent-cyan:    #0369a1;   /* Slate Ocean Blue - primary data tracks */
+  --accent-green:   #15803d;   /* Emerald Green - secure validation feeds */
+  --accent-orange:  #b45309;   /* Non-vibrant Amber Warning threshold */
+  --accent-red:     #b91c1c;   /* Crimson Crisis Alert marker */
+  --accent-purple:  #6d28d9;   /* Deep Royal Purple - analytical indices */
 
-  --text-primary:   #f0f4ff;
-  --text-secondary: #8899bb;
-  --text-muted:     #4a5568;
-  --map-bg:         #050810;
-  --card-shadow:    0 4px 24px rgba(0,0,0,0.4);
+  /* Enforce deeply legible text matrices */
+  --text-primary:   #0f172a;   /* High-contrast slate charcoal */
+  --text-secondary: #334155;   /* Deep charcoal gray */
+  --text-muted:     #475569;   /* Grounded gray for metric labels */
+  --map-bg:         #e2e8f0;
+  --card-shadow:    0 4px 18px rgba(15, 23, 42, 0.04);
 
-  /* Climate color scales */
-  --temp-cold:   #1a2f4e;
-  --temp-cool:   #2563eb;
-  --temp-warm:   #f97316;
-  --temp-hot:    #ef4444;
+  /* Calibrated light-mode climate ranges */
+  --temp-cold:   #e0f2fe;
+  --temp-cool:   #7dd3fc;
+  --temp-warm:   #f59e0b;
+  --temp-hot:    #dc2626;
 
-  --rain-none:   #1a2f4e;
-  --rain-low:    #1d4ed8;
-  --rain-mid:    #06b6d4;
-  --rain-high:   #059669;
+  --rain-none:   #f8fafc;
+  --rain-low:    #bae6fd;
+  --rain-mid:    #38bdf8;
+  --rain-high:   #0284c7;
 
-  --drought-ok:  #059669;
+  --drought-ok:  #16a34a;
   --drought-mid: #ca8a04;
-  --drought-bad: #dc2626;
+  --drought-bad: #b91c1c;
 }
 
 @theme {
@@ -75,18 +76,18 @@ body {
   background: var(--map-bg);
 }
 
-/* Cards and panels */
+/* Structural Layout Enforcement */
 .kpi-card, .panel-card, .sidebar-card, .surface-analysis-card,
-.radar-card, .whatif-card, .forecast-panel, .metric-card {
-  background: var(--bg-surface);
-  border-color: var(--border-default);
-  box-shadow: var(--card-shadow);
+.radar-card, .whatif-card, .forecast-panel, .metric-card, .district-detail-panel {
+  background: var(--bg-surface) !important;
+  border: 1px solid var(--border-default) !important;
+  box-shadow: var(--card-shadow) !important;
+  color: var(--text-primary) !important;
 }
 
-/* Nav bar */
-nav, .navbar {
-  background: var(--bg-surface);
-  border-bottom: 1px solid var(--border-default);
+nav, .navbar, header {
+  background: var(--bg-surface) !important;
+  border-bottom: 1px solid var(--border-default) !important;
 }
 
 @layer utilities {
@@ -132,7 +133,7 @@ nav, .navbar {
 /* Custom Sleek Range Simulator Slider */
 input[type="range"] {
   -webkit-appearance: none;
-  background: #e2e8f0;
+  background: #cbd5e1 !important;
   height: 6px;
   border-radius: 3px;
   outline: none;
@@ -324,6 +325,7 @@ input[type="range"]::-webkit-slider-thumb:hover {
   flex: 1;
   transition: flex 0.4s cubic-bezier(0.4,0,0.2,1);
   height: 100%;
+  background: var(--map-bg) !important;
 }
 
 .map-area.split-view .map-svg-container {
@@ -453,4 +455,17 @@ input[type="range"]::-webkit-slider-thumb:hover {
   border: 1px solid var(--border-default);
   border-radius: 8px;
   padding: 6px 12px;
+}
+
+/* Update the bottom metadata layer and panel descriptors text rules */
+.focus-label, .tt-label, .zoom-hint {
+  color: var(--text-secondary) !important;
+  font-weight: 700 !important;
+}
+
+.zoom-hint {
+  background: rgba(255, 255, 255, 0.95) !important;
+  border: 1px solid var(--border-default) !important;
+  color: var(--text-primary) !important;
+  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.08);
 }

@@ -12,7 +12,8 @@ import {
   Award,
   Database,
   ChevronRight,
-  CloudRain
+  CloudRain,
+  Heart
 } from "lucide-react";
 import { SimulationParams } from "../types";
 import { STATE_CLIMATE_DATA } from "./MapView";
@@ -35,6 +36,32 @@ interface AnalyticsViewProps {
 
 export default function AnalyticsView({ simulation }: AnalyticsViewProps) {
   const [selectedStateName, setSelectedStateName] = useState("Maharashtra");
+
+  // Track active expanded SOP playbook panels
+  const [expandedCardIdx, setExpandedCardIdx] = useState<number | null>(0);
+
+  // Define dynamic playbook details based on metrics levels
+  const getSOPPlaybook = (title: string, score: number) => {
+    if (score >= 75) {
+      return [
+        "⚠️ RED ALERT Protocol Active",
+        "Deploy emergency response assets immediately",
+        "Initiate mandatory regional resource rationing codes"
+      ];
+    }
+    if (score >= 50) {
+      return [
+        "🔸 ORANGE LEVEL Watch Active",
+        "Pre-position municipal maintenance teams",
+        "issue precautionary public health advisories"
+      ];
+    }
+    return [
+      "🔹 GREEN STATUS Secure",
+      "Maintain baseline observation feeds",
+      "Standard resource distribution guidelines apply"
+    ];
+  };
 
   // Get active selected state data, fallback to Maharashtra
   const activeState = STATE_CLIMATE_DATA.find(s => isStateMatch(s.state, selectedStateName)) || 
@@ -85,6 +112,8 @@ export default function AnalyticsView({ simulation }: AnalyticsViewProps) {
   const floodRiskScore = Math.max(0, Math.min(100, Math.round(42 + (rainSeverity / 100) * 35)));
   const droughtSeverity = Math.max(0, Math.min(100, Math.round(48 - (rainSeverity / 100) * 25)));
   const soilMoistureIndex = Math.max(0, Math.min(100, Math.round(68 - tempSeverity * 4 + (rainSeverity / 100) * 15)));
+  const droughtScore = droughtSeverity;
+  const soilMoistureScore = soilMoistureIndex;
 
   const getRiskColor = (score: number, invert = false) => {
     let severe = score >= 75;
@@ -372,7 +401,7 @@ export default function AnalyticsView({ simulation }: AnalyticsViewProps) {
                     className={`w-full text-left p-3 rounded-xl transition-all border flex items-center justify-between cursor-pointer ${
                       isSelected 
                         ? "bg-bg-elevated/60 border-accent-blue/40 text-text-primary font-black shadow-lg" 
-                        : "bg-bg-void/40 border-transparent text-text-secondary hover:bg-bg-elevated/40 hover:border-border-default"
+                        : "bg-bg-deep border-slate-200/50 text-text-secondary hover:bg-bg-elevated/40 hover:border-border-default"
                     }`}
                   >
                     <div className="flex items-center gap-2.5">
@@ -395,7 +424,7 @@ export default function AnalyticsView({ simulation }: AnalyticsViewProps) {
               })}
             </div>
 
-            <div className="bg-bg-void/60 p-3 rounded-xl border border-border-default text-[10px] font-mono space-y-1.5 text-text-secondary mt-2">
+            <div className="bg-bg-deep p-3 rounded-xl border border-border-default text-[10px] font-mono space-y-1.5 text-text-secondary mt-2">
               <div className="flex justify-between">
                 <span>Core Area Selected:</span>
                 <span className="text-text-primary font-bold">{activeState.state}</span>
@@ -423,67 +452,128 @@ export default function AnalyticsView({ simulation }: AnalyticsViewProps) {
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             {/* CARD 1 */}
-            <div className="bg-bg-surface p-5 rounded-2xl border border-border-default flex flex-col justify-between h-32 border-t-4 border-t-accent-red hover:border-border-bright/35 transition-all shadow-xl">
+            <div 
+              onClick={() => setExpandedCardIdx(expandedCardIdx === 0 ? null : 0)}
+              className={`bg-bg-surface p-5 rounded-2xl border border-border-default flex flex-col justify-between cursor-pointer border-t-4 border-t-accent-red hover:border-border-bright/35 transition-all shadow-xl min-h-32 ${expandedCardIdx === 0 ? 'ring-1 ring-accent-red/30' : ''}`}
+            >
               <div className="flex justify-between items-start">
                 <span className="text-[9px] font-display font-black text-text-secondary uppercase tracking-wider">
                   Heat Stress Index
                 </span>
                 <Sun className="w-4 h-4 text-accent-red" />
               </div>
-              <div>
+              <div className="mt-2">
                 <p className="text-xl font-mono text-text-primary font-black tracking-tight">{heatStressScore}%</p>
                 <span className={`text-[8px] font-mono font-bold border rounded-md px-1.5 py-0.5 inline-block mt-2 uppercase ${getRiskColor(heatStressScore)}`}>
                   {getRiskLabel(heatStressScore)}
                 </span>
               </div>
+              
+              {/* Dynamic Expandable SOP List */}
+              {expandedCardIdx === 0 && (
+                <div className="mt-4 pt-3 border-t border-slate-100 space-y-1.5 text-[9px] font-mono text-text-secondary animate-fade-in">
+                  <div className="text-[8px] font-black text-accent-red uppercase tracking-wider">MUNICIPAL SOP SCRIPT:</div>
+                  {getSOPPlaybook("Heat", heatStressScore).map((step, i) => (
+                    <div key={i} className="flex items-center gap-1.5 font-bold">
+                      <span className="w-1 h-1 rounded-full bg-text-muted" />
+                      <span>{step.toUpperCase()}</span>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
 
             {/* CARD 2 */}
-            <div className="bg-bg-surface p-5 rounded-2xl border border-border-default flex flex-col justify-between h-32 border-t-4 border-t-accent-blue hover:border-border-bright/35 transition-all shadow-xl">
+            <div 
+              onClick={() => setExpandedCardIdx(expandedCardIdx === 1 ? null : 1)}
+              className={`bg-bg-surface p-5 rounded-2xl border border-border-default flex flex-col justify-between cursor-pointer border-t-4 border-t-accent-blue hover:border-border-bright/35 transition-all shadow-xl min-h-32 ${expandedCardIdx === 1 ? 'ring-1 ring-accent-blue/30' : ''}`}
+            >
               <div className="flex justify-between items-start">
                 <span className="text-[9px] font-display font-black text-text-secondary uppercase tracking-wider">
                   Flood Risk Score
                 </span>
-                <Droplets className="w-4 h-4 text-accent-blue" />
+                <CloudRain className="w-4 h-4 text-accent-blue" />
               </div>
-              <div>
+              <div className="mt-2">
                 <p className="text-xl font-mono text-text-primary font-black tracking-tight">{floodRiskScore}%</p>
                 <span className={`text-[8px] font-mono font-bold border rounded-md px-1.5 py-0.5 inline-block mt-2 uppercase ${getRiskColor(floodRiskScore)}`}>
                   {getRiskLabel(floodRiskScore)}
                 </span>
               </div>
+              
+              {expandedCardIdx === 1 && (
+                <div className="mt-4 pt-3 border-t border-slate-100 space-y-1.5 text-[9px] font-mono text-text-secondary animate-fade-in">
+                  <div className="text-[8px] font-black text-accent-blue uppercase tracking-wider">MUNICIPAL SOP SCRIPT:</div>
+                  {getSOPPlaybook("Flood", floodRiskScore).map((step, i) => (
+                    <div key={i} className="flex items-center gap-1.5 font-bold">
+                      <span className="w-1 h-1 rounded-full bg-text-muted" />
+                      <span>{step.toUpperCase()}</span>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
 
             {/* CARD 3 */}
-            <div className="bg-bg-surface p-5 rounded-2xl border border-border-default flex flex-col justify-between h-32 border-t-4 border-t-accent-cyan hover:border-border-bright/35 transition-all shadow-xl">
+            <div 
+              onClick={() => setExpandedCardIdx(expandedCardIdx === 2 ? null : 2)}
+              className={`bg-bg-surface p-5 rounded-2xl border border-border-default flex flex-col justify-between cursor-pointer border-t-4 border-t-accent-cyan hover:border-border-bright/35 transition-all shadow-xl min-h-32 ${expandedCardIdx === 2 ? 'ring-1 ring-accent-cyan/30' : ''}`}
+            >
               <div className="flex justify-between items-start">
                 <span className="text-[9px] font-display font-black text-text-secondary uppercase tracking-wider">
                   Drought Severity
                 </span>
                 <Activity className="w-4 h-4 text-accent-cyan" />
               </div>
-              <div>
-                <p className="text-xl font-mono text-text-primary font-black tracking-tight">{droughtSeverity}%</p>
-                <span className={`text-[8px] font-mono font-bold border rounded-md px-1.5 py-0.5 inline-block mt-2 uppercase ${getRiskColor(droughtSeverity)}`}>
-                  {getRiskLabel(droughtSeverity)}
+              <div className="mt-2">
+                <p className="text-xl font-mono text-text-primary font-black tracking-tight">{droughtScore}%</p>
+                <span className={`text-[8px] font-mono font-bold border rounded-md px-1.5 py-0.5 inline-block mt-2 uppercase ${getRiskColor(droughtScore)}`}>
+                  {getRiskLabel(droughtScore)}
                 </span>
               </div>
+              
+              {expandedCardIdx === 2 && (
+                <div className="mt-4 pt-3 border-t border-slate-100 space-y-1.5 text-[9px] font-mono text-text-secondary animate-fade-in">
+                  <div className="text-[8px] font-black text-accent-cyan uppercase tracking-wider">MUNICIPAL SOP SCRIPT:</div>
+                  {getSOPPlaybook("Drought", droughtScore).map((step, i) => (
+                    <div key={i} className="flex items-center gap-1.5 font-bold">
+                      <span className="w-1 h-1 rounded-full bg-text-muted" />
+                      <span>{step.toUpperCase()}</span>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
 
             {/* CARD 4 */}
-            <div className="bg-bg-surface p-5 rounded-2xl border border-border-default flex flex-col justify-between h-32 border-t-4 border-t-accent-orange hover:border-border-bright/35 transition-all shadow-xl">
+            <div 
+              onClick={() => setExpandedCardIdx(expandedCardIdx === 3 ? null : 3)}
+              className={`bg-bg-surface p-5 rounded-2xl border border-border-default flex flex-col justify-between cursor-pointer border-t-4 border-t-accent-orange hover:border-border-bright/35 transition-all shadow-xl min-h-32 ${expandedCardIdx === 3 ? 'ring-1 ring-accent-orange/30' : ''}`}
+            >
               <div className="flex justify-between items-start">
                 <span className="text-[9px] font-display font-black text-text-secondary uppercase tracking-wider">
                   Soil Moisture Index
                 </span>
-                <Award className="w-4 h-4 text-accent-orange" />
+                <Heart className="w-4 h-4 text-accent-orange" />
               </div>
-              <div>
-                <p className="text-xl font-mono text-text-primary font-black tracking-tight">{soilMoistureIndex}%</p>
-                <span className={`text-[8px] font-mono font-bold border rounded-md px-1.5 py-0.5 inline-block mt-2 uppercase ${getRiskColor(soilMoistureIndex, true)}`}>
-                  {getRiskLabel(soilMoistureIndex, true)}
+              <div className="mt-2">
+                <p className="text-xl font-mono text-text-primary font-black tracking-tight">{soilMoistureScore}%</p>
+                <span className={`text-[8px] font-mono font-bold border rounded-md px-1.5 py-0.5 inline-block mt-2 uppercase ${getRiskColor(soilMoistureScore)}`}>
+                  {getRiskLabel(soilMoistureScore)}
                 </span>
               </div>
+              
+              {expandedCardIdx === 3 && (
+                <div className="mt-4 pt-3 border-t border-slate-100 space-y-1.5 text-[9px] font-mono text-text-secondary animate-fade-in">
+                  <div className="text-[8px] font-black text-accent-orange uppercase tracking-wider">MUNICIPAL SOP SCRIPT:</div>
+                  {getSOPPlaybook("Soil", soilMoistureScore).map((step, i) => (
+                    <div key={i} className="flex items-center gap-1.5 font-bold">
+                      <span className="w-1 h-1 rounded-full bg-text-muted" />
+                      <span>{step.toUpperCase()}</span>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
           </div>
         </div>
