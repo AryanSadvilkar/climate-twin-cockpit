@@ -23,15 +23,29 @@ import {
 import { SimulationParams, WeatherLayer } from "../types";
 import { CITIES_INDEX } from "../data";
 import MapView from "./MapView";
+import { useTelemetry } from "../context/TelemetryContext";
 
-const getLiveMosdacMetric = (layer: string, offset: number) => {
+const calculateDroughtIndex = (temp: number, rain: number, tempOffset: number) => {
+  console.log("AI-TWIN: Simulating climate anomaly using live telemetry ingress...");
+  let base = (temp * 0.15) - (rain * 0.05);
+  if (tempOffset > 2.0) {
+    base *= (1.0 + (tempOffset - 2.0) * 0.5);
+  }
+  return Math.max(0.0, Math.min(1.0, base));
+};
+
+const getLiveMosdacMetric = (layer: string, offset: number, rain: number = 100) => {
   const baseMetrics: Record<string, { label: string; val: string; status: string }> = {
     temp: { label: "INSAT-3DR LST", val: `${(27.8 + offset).toFixed(1)}°C`, status: "THERMAL IMAGER ENERGETIC" },
     precip: { label: "INSAT-3D RHEM", val: `${Math.round(842 * (1 + offset * 0.05))}mm`, status: "HYDRO-RETRIEVAL CONCURRENT" },
     wind: { label: "MOSDAC SCATSAT", val: `${Math.round(24 + offset * 2)} km/h`, status: "CYCLONIC CYCLES TRACKED" },
     pressure: { label: "MET-GRID SYNOP", val: `${Math.round(1008 - offset * 1.5)} hPa`, status: "BAROMETRIC ANOMALY DETECTED" },
     humidity: { label: "SATELLITE VWC", val: `${Math.max(10, Math.min(100, Math.round(72 + offset * 3)))}%`, status: "SUBSURFACE MOISTURE GRADIENT" },
-    drought: { label: "NDVI STRESS", val: `${(0.32 + (offset > 0 ? offset * 0.04 : 0)).toFixed(2)} idx`, status: "AGRONOMIC SCARCITY RADIAL" },
+    drought: { 
+      label: "NDVI STRESS", 
+      val: `${calculateDroughtIndex(31.84 + offset, rain, offset).toFixed(3)} idx`, 
+      status: "AGRONOMIC SCARCITY RADIAL" 
+    },
     cloud: { label: "INSAT OLR", val: `${Math.max(0, Math.min(100, Math.round(65 + offset * 4)))}%`, status: "ALBEDO REFLECTANCE READ" }
   };
   return baseMetrics[layer] || { label: "MOSDAC FEED", val: "TRACKING", status: "NOMINAL MATRIX SYSTEM" };
@@ -75,6 +89,36 @@ export default function DashboardView({
   isPresentationMode = false
 }: DashboardViewProps) {
   const mapRef = useRef<any>(null);
+  const { activeTelemetry } = useTelemetry();
+
+  const getCurrentTelemetryVal = (telemetry: any, layer: string) => {
+    if (!telemetry) return null;
+    if (layer === 'temp' && telemetry.current_weather) {
+      return `${telemetry.current_weather.temperature.toFixed(1)}°C`;
+    }
+    if (layer === 'wind' && telemetry.current_weather) {
+      return `${telemetry.current_weather.windspeed.toFixed(1)} km/h`;
+    }
+    if (!telemetry.hourly || !telemetry.current_weather) return null;
+    const times: string[] = telemetry.hourly.time;
+    const currentTimeStr = telemetry.current_weather.time;
+    const currentIdx = times.findIndex((t: string) => t.startsWith(currentTimeStr.substring(0, 13)));
+    if (currentIdx === -1) return null;
+
+    if (layer === 'precip') {
+      return `${telemetry.hourly.precipitation[currentIdx].toFixed(1)} mm`;
+    }
+    if (layer === 'humidity') {
+      return `${telemetry.hourly.relative_humidity_2m[currentIdx].toFixed(1)}%`;
+    }
+    if (layer === 'drought') {
+      const temp = telemetry.hourly.temperature_2m[currentIdx];
+      const rain = telemetry.hourly.precipitation[currentIdx];
+      const idxVal = calculateDroughtIndex(temp, rain, 0); // temp offset 0 for live telemetry
+      return `${idxVal.toFixed(3)} idx`;
+    }
+    return null;
+  };
 
   const [isMissionControlLocal, setIsMissionControlLocal] = useState(false);
   const isMissionControl = isPresentationMode || isMissionControlLocal;
@@ -132,6 +176,15 @@ export default function DashboardView({
 
   // Recalculating trigger
   const handleRecalculate = () => {
+    setIsRecalculating(true);
+    setRecalcStep(0);
+  };
+
+  const handleReset = () => {
+    setParams({
+      tempOffset: 0.0,
+      rainIntensity: 100
+    });
     setIsRecalculating(true);
     setRecalcStep(0);
   };
@@ -277,9 +330,14 @@ export default function DashboardView({
                 </div>
                 
                 <div className="flex flex-col gap-2 pt-1">
-                  <button onClick={handleRecalculate} className="w-full py-2 bg-accent-blue text-white text-[10px] font-bold rounded-lg uppercase tracking-wider cursor-pointer transition-all active:scale-[0.98]">
-                    Recalculate Grids
-                  </button>
+                  <div className="flex gap-2">
+                    <button onClick={handleRecalculate} className="flex-1 py-2 bg-accent-blue text-white text-[10px] font-bold rounded-lg uppercase tracking-wider cursor-pointer transition-all active:scale-[0.98]">
+                      Recalculate Grids
+                    </button>
+                    <button onClick={handleReset} className="flex-1 py-2 bg-white border border-border-bright text-text-primary text-[10px] font-bold rounded-lg uppercase tracking-wider hover:bg-bg-deep transition-all cursor-pointer transition-all active:scale-[0.98]">
+                      Reset
+                    </button>
+                  </div>
                   <button 
                     onClick={() => {
                       setSimulation(params);
@@ -381,6 +439,34 @@ export default function DashboardView({
                   <svg className="w-full h-full" preserveAspectRatio="none" viewBox="0 0 100 45">
                     <path d={`M0 45 ` + sparklineValues.map((val, i) => `L ${(i / (sparklineValues.length - 1)) * 100} ${45 - val}`).join(" ") + ` L 100 45 Z`} fill="rgba(59, 130, 246, 0.08)" stroke="var(--accent-blue)" strokeWidth="2.0" />
                   </svg>
+                </div>
+              </div>
+
+              {/* MOSDAC LIVE LAYER FEED METRIC CARD */}
+              <div className="bg-bg-elevated/35 border border-border-default p-4 rounded-xl flex flex-col gap-3">
+                <div className="flex justify-between items-center border-b border-border-default pb-2">
+                  <span className="text-[9.5px] font-bold tracking-widest uppercase flex items-center gap-1.5">
+                    <Activity className="w-3.5 h-3.5 text-accent-cyan" />
+                    {activeLayer === 'drought' ? 'DROUGHT INDEX' : `${activeLayer.toUpperCase()} FEED`}
+                  </span>
+                  <span className="w-1.5 h-1.5 rounded-full bg-accent-cyan" />
+                </div>
+                <div className="flex flex-col gap-1 font-mono">
+                  <div className="flex justify-between text-[10px] text-text-secondary">
+                    <span>SENSOR SOURCE:</span>
+                    <span className="text-text-primary font-bold animate-pulse text-accent-cyan">
+                      {activeTelemetry ? "MET-NET LIVE TELEMETRY" : getLiveMosdacMetric(activeLayer, params.tempOffset, params.rainIntensity).label}
+                    </span>
+                  </div>
+                  <div className="flex justify-between items-center mt-1">
+                    <span className="text-[8.5px] text-text-secondary uppercase">METRIC VALUE:</span>
+                    <span className={`font-black text-xs ${activeLayer === 'drought' ? 'text-accent-orange animate-pulse text-sm font-extrabold' : 'text-text-primary'}`}>
+                      {getCurrentTelemetryVal(activeTelemetry, activeLayer) || getLiveMosdacMetric(activeLayer, params.tempOffset, params.rainIntensity).val}
+                    </span>
+                  </div>
+                  <div className="text-[8px] text-accent-green font-bold uppercase mt-1 animate-pulse">
+                    &gt; {activeTelemetry ? "STREAM COMPLIANT OK" : getLiveMosdacMetric(activeLayer, params.tempOffset, params.rainIntensity).status}
+                  </div>
                 </div>
               </div>
 

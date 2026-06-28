@@ -12,6 +12,7 @@ import {
 } from "lucide-react";
 import { SimulationParams } from "../types";
 import { STATE_DATA } from "./MapView";
+import { useTelemetry } from "../context/TelemetryContext";
 
 interface ReportsViewProps {
   simulation: SimulationParams;
@@ -44,9 +45,43 @@ export const generateDynamicReportHeuristics = (tempOffset: number, rainIntensit
 `;
 };
 
+export const getTelemetryDataAndTrends = (telemetry: any) => {
+  if (!telemetry || !telemetry.hourly || !telemetry.current_weather) {
+    return null;
+  }
+
+  const times: string[] = telemetry.hourly.time;
+  const currentTimeStr = telemetry.current_weather.time;
+  
+  // Match current hour index
+  const currentIdx = times.findIndex((t: string) => t.startsWith(currentTimeStr.substring(0, 13)));
+  
+  const getFieldValues = (field: string, fallbackVal: number) => {
+    const curVal = currentIdx !== -1 ? telemetry.hourly[field][currentIdx] : fallbackVal;
+    const pastVal = (currentIdx !== -1 && currentIdx >= 24) ? telemetry.hourly[field][currentIdx - 24] : curVal;
+    return { curVal, trend: curVal - pastVal };
+  };
+
+  const temp = getFieldValues("temperature_2m", telemetry.current_weather.temperature);
+  const precip = getFieldValues("precipitation", 0);
+  const humidity = getFieldValues("relative_humidity_2m", 50);
+
+  return {
+    currentTemp: temp.curVal,
+    tempTrend: temp.trend,
+    currentPrecip: precip.curVal,
+    precipTrend: precip.trend,
+    currentHumidity: humidity.curVal,
+    humidityTrend: humidity.trend
+  };
+};
+
 export default function ReportsView({ simulation, activeLayer, selectedRegion }: ReportsViewProps) {
+  const { activeTelemetry, selectedName } = useTelemetry();
+  const activeLocation = selectedName || selectedRegion;
+
   // Clean, high-contrast reactive generation directly from live slider and map location props
-  const reportContent = generateDynamicReportHeuristics(simulation.tempOffset, simulation.rainIntensity, activeLayer, selectedRegion);
+  const reportContent = generateDynamicReportHeuristics(simulation.tempOffset, simulation.rainIntensity, activeLayer, activeLocation);
 
   const [isLoading, setIsLoading] = useState(false);
   const [loadStep, setLoadStep] = useState(0);
@@ -97,6 +132,7 @@ export default function ReportsView({ simulation, activeLayer, selectedRegion }:
         The user is interacting with a dashboard mapping regional weather impacts.
         
         CURRENT SIMULATION PARAMETERS:
+        - Active Location Focus: ${activeLocation}
         - Active Map Visualization Layer: ${activeLayer}
         - Temperature Shift Offset: ${simulation.tempOffset > 0 ? "+" : ""}${simulation.tempOffset.toFixed(1)}°C
         - Precipitation Index Multiplier: ${simulation.rainIntensity}%
@@ -297,7 +333,7 @@ export default function ReportsView({ simulation, activeLayer, selectedRegion }:
           <div className="grid grid-cols-2 md:grid-cols-5 gap-4 text-left">
             <div>
               <span className="opacity-60 text-[9px] font-bold">STATION LOCATION:</span>
-              <p className="text-slate-900 font-extrabold uppercase mt-0.5">{selectedRegion}</p>
+              <p className="text-slate-900 font-extrabold uppercase mt-0.5">{activeLocation}</p>
             </div>
             <div>
               <span className="opacity-60 text-[9px] font-bold">WHAT-IF TEMP OFFSET:</span>
@@ -323,6 +359,63 @@ export default function ReportsView({ simulation, activeLayer, selectedRegion }:
             </div>
           </div>
         </div>
+
+        {/* LIVE METEOROLOGICAL TELEMETRY CARDS */}
+        {(() => {
+          const trends = getTelemetryDataAndTrends(activeTelemetry);
+          if (!trends) return null;
+          return (
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 animate-fade-in">
+              {/* Temp Card */}
+              <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex flex-col justify-between">
+                <div>
+                  <span className="text-[9px] font-mono font-black text-slate-400 uppercase tracking-widest block">TEMPERATURE</span>
+                  <p className="text-2xl font-mono font-black text-slate-900 mt-2">
+                    {trends.currentTemp.toFixed(1)}°C
+                  </p>
+                </div>
+                <div className="mt-3 pt-3 border-t border-slate-100 flex justify-between items-center text-[9.5px] font-mono">
+                  <span className="text-slate-500">24H TREND:</span>
+                  <span className={`font-black ${trends.tempTrend >= 0 ? "text-rose-600" : "text-emerald-600"}`}>
+                    {trends.tempTrend >= 0 ? "▲ INCREASED" : "▼ DECREASED"} ({Math.abs(trends.tempTrend).toFixed(1)}°C)
+                  </span>
+                </div>
+              </div>
+
+              {/* Precipitation Card */}
+              <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex flex-col justify-between">
+                <div>
+                  <span className="text-[9px] font-mono font-black text-slate-400 uppercase tracking-widest block">PRECIPITATION</span>
+                  <p className="text-2xl font-mono font-black text-slate-900 mt-2">
+                    {trends.currentPrecip.toFixed(1)} mm
+                  </p>
+                </div>
+                <div className="mt-3 pt-3 border-t border-slate-100 flex justify-between items-center text-[9.5px] font-mono">
+                  <span className="text-slate-500">24H TREND:</span>
+                  <span className={`font-black ${trends.precipTrend >= 0 ? "text-blue-600" : "text-emerald-600"}`}>
+                    {trends.precipTrend >= 0 ? "▲ INCREASED" : "▼ DECREASED"} ({Math.abs(trends.precipTrend).toFixed(1)} mm)
+                  </span>
+                </div>
+              </div>
+
+              {/* Humidity Card */}
+              <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex flex-col justify-between">
+                <div>
+                  <span className="text-[9px] font-mono font-black text-slate-400 uppercase tracking-widest block">RELATIVE HUMIDITY</span>
+                  <p className="text-2xl font-mono font-black text-slate-900 mt-2">
+                    {Math.round(trends.currentHumidity)}%
+                  </p>
+                </div>
+                <div className="mt-3 pt-3 border-t border-slate-100 flex justify-between items-center text-[9.5px] font-mono">
+                  <span className="text-slate-500">24H TREND:</span>
+                  <span className={`font-black ${trends.humidityTrend >= 0 ? "text-indigo-600" : "text-amber-600"}`}>
+                    {trends.humidityTrend >= 0 ? "▲ INCREASED" : "▼ DECREASED"} ({Math.abs(trends.humidityTrend).toFixed(1)}%)
+                  </span>
+                </div>
+              </div>
+            </div>
+          );
+        })()}
 
         {/* Dynamic Model Variance Guardrail Alert */}
         {(simulation.tempOffset > 3.0 && simulation.rainIntensity > 150) && (

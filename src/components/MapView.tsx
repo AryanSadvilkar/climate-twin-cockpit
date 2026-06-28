@@ -1,6 +1,11 @@
-import { useState, useEffect, useRef, useMemo, useImperativeHandle, forwardRef, memo } from "react";
+import { useState, useEffect, useRef, useMemo, useImperativeHandle, forwardRef, memo, useCallback } from "react";
 import * as d3 from "d3";
 import { SimulationParams, WeatherLayer } from "../types";
+import { useClimateData, fetchAllStatesData } from "../hooks/useClimateData";
+import { useTelemetry } from "../context/TelemetryContext";
+import { fetchStateTelemetry, interpolateValue } from "../utils/dataBridge";
+import { fetchStateHistoricalData, trainAndForecast } from "../utils/aiForecasting";
+import AgricultureView from "./AgricultureView";
 
 export type MapLevel = 'india' | 'state' | 'district';
 
@@ -21,6 +26,94 @@ const INDIA_DISTRICTS_URL = 'https://raw.githubusercontent.com/geohacker/india/m
 // Global memory cache to absolutely avoid re-fetching data when swapping tabs
 let globalStateGeoJSON: any = null;
 let globalDistrictGeoJSON: any = null;
+
+interface DistrictPathProps {
+  feature: any;
+  isSelected: boolean;
+  fillColor: string;
+  pathGen: any;
+  onClick: () => void;
+}
+
+const DistrictPath = memo(({ feature, isSelected, fillColor, pathGen, onClick }: DistrictPathProps) => {
+  const dName = feature.properties.DISTRICT || feature.properties.dtname || feature.properties.NAME_2 || feature.properties.NAME || '';
+  const centroid = d3.geoCentroid(feature);
+  const isPending = fillColor === '#cbd5e1';
+
+  return (
+    <path
+      className={`district-path ${isSelected ? 'selected' : ''} ${isPending ? 'pulse-animate' : ''}`}
+      d={pathGen(feature) || ''}
+      data-district={dName}
+      data-lat={centroid[1]}
+      data-lon={centroid[0]}
+      fill={fillColor}
+      stroke={isSelected ? '#0f172a' : 'rgba(255,255,255,0.4)'}
+      strokeWidth={isSelected ? 1.4 : 0.6}
+      onClick={onClick}
+      style={{ transition: 'fill 300ms ease' }}
+    />
+  );
+});
+
+
+interface DistrictsGroupProps {
+  features: any[];
+  selectedState: string;
+  selectedDistrict: string | null;
+  stateTelemetryValue: number | null;
+  activeLayerId: string;
+  getColor: (val: number | null) => string;
+  handleDistrictClick: (name: string) => void;
+  pathGen: any;
+  getDistrictValue: (distName: string, stateName: string, feature?: any) => number | null;
+}
+
+const DistrictsGroup = memo(({
+  features,
+  selectedState,
+  selectedDistrict,
+  stateTelemetryValue,
+  activeLayerId,
+  getColor,
+  handleDistrictClick,
+  pathGen,
+  getDistrictValue
+}: DistrictsGroupProps) => {
+  return (
+    <>
+      {features.map((f: any, idx: number) => {
+        let dName = '';
+        let isSelected = false;
+        let fillColor = '#cbd5e1';
+
+        try {
+          dName = f.properties.DISTRICT || f.properties.dtname || f.properties.NAME_2 || f.properties.NAME || '';
+          isSelected = dName === selectedDistrict;
+          const dVal = getDistrictValue(dName, selectedState, f);
+          fillColor = isSelected
+            ? 'var(--accent-blue)'
+            : (dVal !== null ? getColor(dVal) : '#cbd5e1');
+        } catch (err) {
+          console.error("Error processing district path:", err);
+          fillColor = '#cbd5e1';
+        }
+
+        return (
+          <DistrictPath
+            key={`district-${dName || idx}-${idx}`}
+            feature={f}
+            isSelected={isSelected}
+            fillColor={fillColor}
+            pathGen={pathGen}
+            onClick={() => dName && handleDistrictClick(dName)}
+          />
+        );
+      })}
+    </>
+  );
+});
+
 
 export const STATE_DATA: Record<string, {rain:number,temp:number,drought:number,wind:number,pressure:number,humidity:number,cloud:number}> = {
   'Andhra Pradesh':    {rain:88, temp:36.2,drought:0.32,wind:18,pressure:1008,humidity:72,cloud:45},
@@ -137,6 +230,53 @@ const MapViewComponent = forwardRef<any, MapViewProps>(({
 
   const statesGeoRef = useRef<any>(globalStateGeoJSON);
   const districtsGeoRef = useRef<any>(globalDistrictGeoJSON);
+
+  const {
+    selectedCoords,
+    setSelectedCoords,
+    selectedName,
+    setSelectedName,
+    activeTelemetry,
+    setActiveTelemetry,
+    liveLoading,
+    liveError,
+    allStatesTelemetry,
+    setAllStatesTelemetry
+  } = useTelemetry();
+
+  useEffect(() => {
+    console.log("MAP-RENDER-CHECK:", {
+      geoJsonLoaded: !!districtsGeoRef.current,
+      agricultureLoaded: !!AgricultureView
+    });
+  }, []);
+
+  useEffect(() => {
+    fetchAllStatesData((stateName, data) => {
+      setAllStatesTelemetry((prev: any) => ({
+        ...prev,
+        [stateName]: data
+      }));
+    });
+  }, [setAllStatesTelemetry]);
+
+  const [stateTelemetryValue, setStateTelemetryValue] = useState<number | null>(null);
+  const [aiForecastPredictions, setAiForecastPredictions] = useState<number[]>([]);
+
+  const {
+    data: activeTelemetryData,
+    isStale,
+    isCircuitOpen
+  } = useClimateData(
+    selectedCoords ? selectedCoords.lat : null,
+    selectedCoords ? selectedCoords.lon : null
+  );
+
+  useEffect(() => {
+    if (activeTelemetryData) {
+      setActiveTelemetry(activeTelemetryData);
+    }
+  }, [activeTelemetryData, setActiveTelemetry]);
 
   // backward-compatible ref methods
   useImperativeHandle(ref, () => ({
@@ -300,14 +440,42 @@ const MapViewComponent = forwardRef<any, MapViewProps>(({
     return Number(base.toFixed(1));
   };
 
-  const getDistrictValue = (distName: string, stateName: string): number => {
-    const parentVal = getStateValue(stateName);
-    let hash = 0;
-    for (let i = 0; i < distName.length; i++) {
-      hash = distName.charCodeAt(i) + ((hash << 5) - hash);
+  const getDistrictValue = (distName: string, stateName: string, feature?: any): number | null => {
+    let baseTemp = stateTelemetryValue;
+    if (activeTimeIndex > 0 && aiForecastPredictions.length > activeTimeIndex && aiForecastPredictions[activeTimeIndex] !== undefined) {
+      baseTemp = aiForecastPredictions[activeTimeIndex];
     }
-    const ratio = (Math.abs(hash % 200) / 200) * 0.30 - 0.15; // varies ±15%
-    return Number((parentVal * (1 + ratio)).toFixed(1));
+
+    if (baseTemp !== null && feature) {
+      const centroid = d3.geoCentroid(feature);
+      const stateFeature = statesGeoRef.current?.features.find(
+        (f: any) => normalizeStateName(f.properties.NAME_1 || f.properties.ST_NM || '') === normalizeStateName(stateName)
+      );
+      if (stateFeature) {
+        const stateCentroid = d3.geoCentroid(stateFeature);
+        const baseVal = interpolateValue(
+          baseTemp,
+          { lat: stateCentroid[1], lon: stateCentroid[0] },
+          { lat: centroid[1], lon: centroid[0] }
+        );
+
+        let finalVal = baseVal;
+        if (activeLayerId === 'temp') {
+          finalVal = baseVal + simulation.tempOffset;
+        } else if (activeLayerId === 'precip') {
+          finalVal = baseVal * (simulation.rainIntensity / 100);
+        } else if (activeLayerId === 'drought') {
+          const temp = baseVal + simulation.tempOffset;
+          const rain = baseVal * (simulation.rainIntensity / 100);
+          finalVal = (temp * 0.15) - (rain * 0.05);
+        } else if (activeLayerId === 'humidity') {
+          finalVal = Math.max(10, Math.min(100, baseVal + (simulation.tempOffset * -3)));
+        }
+
+        return Number(finalVal.toFixed(1));
+      }
+    }
+    return null;
   };
 
   // Viewbox animations
@@ -390,8 +558,11 @@ const MapViewComponent = forwardRef<any, MapViewProps>(({
 
   // Clicks
   const handleStateClick = (stateName: string) => {
+    setActiveTelemetry(null);
     setSelectedState(stateName);
+    setSelectedName(stateName);
     setLevel('state');
+    setStateTelemetryValue(null);
     
     // Broadcast geographic target selection cleanly up to parent shell
     window.dispatchEvent(new CustomEvent('region-select-update', { detail: stateName }));
@@ -401,7 +572,26 @@ const MapViewComponent = forwardRef<any, MapViewProps>(({
     const feature = statesGeoRef.current?.features.find(
       (f: any) => normalizeStateName(f.properties.NAME_1 || f.properties.ST_NM || '') === norm
     );
+
     if (feature) {
+      const centroid = d3.geoCentroid(feature);
+      setSelectedCoords({ lat: centroid[1], lon: centroid[0] });
+      
+      // Fetch state-wide telemetry grid once
+      fetchStateTelemetry(centroid[1], centroid[0]).then((val) => {
+        setStateTelemetryValue(val);
+      });
+
+      // Clear previous predictions and fetch historical data
+      setAiForecastPredictions([]);
+      fetchStateHistoricalData(centroid[1], centroid[0]).then((history) => {
+        if (history && history.length > 0) {
+          const offsets = [0, 1, 3, 7];
+          const predictions = offsets.map((offset) => trainAndForecast(history, offset));
+          setAiForecastPredictions(predictions);
+        }
+      });
+
       setTimeout(() => {
         zoomToState(feature);
       }, 50);
@@ -417,8 +607,24 @@ const MapViewComponent = forwardRef<any, MapViewProps>(({
   };
 
   const handleDistrictClick = (districtName: string) => {
+    setActiveTelemetry(null);
     setSelectedDistrict(districtName);
+    setSelectedName(`${districtName}, ${selectedState}`);
     setLevel('district');
+
+    // Find district feature to get centroid
+    const feature = districtsGeoRef.current?.features.find((f: any) => {
+      const dProp = f.properties.DISTRICT || f.properties.dtname || f.properties.NAME_2 || f.properties.NAME || '';
+      const sProp = f.properties.ST_NM || f.properties.STATE || f.properties.st_nm || f.properties.NAME_1 || '';
+      return dProp.toLowerCase() === districtName.toLowerCase() &&
+             (sProp.toLowerCase() === selectedState?.toLowerCase() || normalizeStateName(sProp) === normalizeStateName(selectedState || ''));
+    });
+
+    if (feature) {
+      const centroid = d3.geoCentroid(feature);
+      setSelectedCoords({ lat: centroid[1], lon: centroid[0] });
+    }
+
     // Reset to full state view on left side
     if (stateViewBoxRef.current) {
       animateViewBox(stateViewBoxRef.current); // full state bounds, not zoomed
@@ -624,17 +830,53 @@ const MapViewComponent = forwardRef<any, MapViewProps>(({
     const onEnterState = (e: Event) => {
       const path = e.currentTarget as SVGPathElement;
       const name = path.dataset.state || '';
-      const norm = normalizeStateName(name);
-      const cleanS = Object.keys(STATE_DATA).find(k => k.toLowerCase() === norm);
-      const data = cleanS ? STATE_DATA[cleanS] : null;
-      if (!tooltipRef.current || !data) return;
+      
+      if (!tooltipRef.current) return;
       const tt = tooltipRef.current;
       tt.querySelector('.tt-name')!.textContent = name.toUpperCase();
-      tt.querySelector('.tt-temp')!.textContent = `${data.temp}°C`;
-      tt.querySelector('.tt-rain')!.textContent = `${data.rain}mm`;
-      tt.querySelector('.tt-humid')!.textContent = `${data.humidity}%`;
-      tt.querySelector('.tt-drought')!.textContent = `${data.drought} idx`;
-      const alertLevel = getAlertLevel(data);
+
+      const preloaded = allStatesTelemetry[name];
+      let tempText = "—";
+      let rainText = "—";
+      let humidText = "—";
+      let droughtText = "—";
+      let alertLevel = "GREEN";
+
+      if (preloaded) {
+        if (preloaded.current_weather) {
+          tempText = `${preloaded.current_weather.temperature}°C`;
+        }
+        if (preloaded.hourly && preloaded.current_weather) {
+          const times = preloaded.hourly.time;
+          const currentTimeStr = preloaded.current_weather.time;
+          const currentIdx = times.findIndex((t: string) => t.startsWith(currentTimeStr.substring(0, 13)));
+          if (currentIdx !== -1) {
+            rainText = `${preloaded.hourly.precipitation[currentIdx]}mm`;
+            humidText = `${preloaded.hourly.relative_humidity_2m[currentIdx]}%`;
+            const temp = preloaded.hourly.temperature_2m[currentIdx];
+            const rain = preloaded.hourly.precipitation[currentIdx];
+            const droughtVal = (temp * 0.15) - (rain * 0.05);
+            droughtText = `${droughtVal.toFixed(2)} idx`;
+            alertLevel = (temp > 40 || rain > 150) ? "RED" : (temp > 35 || rain > 100 || droughtVal > 0.6) ? "ORANGE" : "GREEN";
+          }
+        }
+      } else {
+        const norm = normalizeStateName(name);
+        const cleanS = Object.keys(STATE_DATA).find(k => k.toLowerCase() === norm);
+        const data = cleanS ? STATE_DATA[cleanS] : null;
+        if (data) {
+          tempText = `${data.temp}°C`;
+          rainText = `${data.rain}mm`;
+          humidText = `${data.humidity}%`;
+          droughtText = `${data.drought} idx`;
+          alertLevel = getAlertLevel(data);
+        }
+      }
+
+      tt.querySelector('.tt-temp')!.textContent = tempText;
+      tt.querySelector('.tt-rain')!.textContent = rainText;
+      tt.querySelector('.tt-humid')!.textContent = humidText;
+      tt.querySelector('.tt-drought')!.textContent = droughtText;
       tt.querySelector('.tt-alert')!.textContent = alertLevel;
       tt.querySelector('.tt-alert')!.className = `tt-alert alert-${alertLevel.toLowerCase()}`;
       tt.style.opacity = '1';
@@ -644,21 +886,47 @@ const MapViewComponent = forwardRef<any, MapViewProps>(({
     const onEnterDistrict = (e: Event) => {
       const path = e.currentTarget as SVGPathElement;
       const name = path.dataset.district || '';
+      
       if (!tooltipRef.current) return;
       const tt = tooltipRef.current;
       tt.querySelector('.tt-name')!.textContent = name.toUpperCase();
-      const base = STATE_DATA[selectedState || ''];
-      if (base) {
-        const seed = name.length;
-        const vary = (v: number, pct: number) => Math.round(v * (1 + ((seed % 7) - 3) * pct / 100) * 10) / 10;
-        tt.querySelector('.tt-temp')!.textContent = `${vary(base.temp, 15)}°C`;
-        tt.querySelector('.tt-rain')!.textContent = `${vary(base.rain, 20)}mm`;
-        tt.querySelector('.tt-humid')!.textContent = `${vary(base.humidity, 10)}%`;
-        tt.querySelector('.tt-drought')!.textContent = `${Math.round(vary(base.drought, 25) * 100) / 100} idx`;
+      
+      const feature = districtsGeoRef.current?.features.find((f: any) => {
+        const dProp = f.properties.DISTRICT || f.properties.dtname || f.properties.NAME_2 || f.properties.NAME || '';
+        return dProp.toLowerCase() === name.toLowerCase();
+      });
+
+      const dVal = getDistrictValue(name, selectedState || '', feature);
+
+      let tempText = "—";
+      let rainText = "—";
+      let humidText = "—";
+      let droughtText = "—";
+
+      const isFuture = activeTimeIndex > 0;
+      const predSuffix = isFuture ? " [AI PREDICTION]" : "";
+
+      if (dVal !== null) {
+        if (activeLayerId === 'temp') {
+          tempText = `${dVal}°C${predSuffix}`;
+        } else if (activeLayerId === 'precip') {
+          rainText = `${dVal}mm${predSuffix}`;
+        } else if (activeLayerId === 'humidity') {
+          humidText = `${dVal}%${predSuffix}`;
+        } else if (activeLayerId === 'drought') {
+          droughtText = `${dVal} idx${predSuffix}`;
+        } else {
+          tempText = `${dVal}${predSuffix}`;
+        }
       }
-      const alertLevel = base ? getAlertLevel(base) : 'GREEN';
-      tt.querySelector('.tt-alert')!.textContent = alertLevel;
-      tt.querySelector('.tt-alert')!.className = `tt-alert alert-${alertLevel.toLowerCase()}`;
+
+      tt.querySelector('.tt-temp')!.textContent = tempText;
+      tt.querySelector('.tt-rain')!.textContent = rainText;
+      tt.querySelector('.tt-humid')!.textContent = humidText;
+      tt.querySelector('.tt-drought')!.textContent = droughtText;
+      
+      tt.querySelector('.tt-alert')!.textContent = '';
+      tt.querySelector('.tt-alert')!.className = 'tt-alert';
       tt.style.opacity = '1';
       path.style.filter = 'brightness(1.3)';
     };
@@ -688,7 +956,7 @@ const MapViewComponent = forwardRef<any, MapViewProps>(({
       svg.removeEventListener('mousemove', onMove);
       observer.disconnect();
     };
-  }, [dataLoaded, level, selectedState]);
+  }, [dataLoaded, level, selectedState, allStatesTelemetry, stateTelemetryValue, activeLayerId]);
 
   // Loading Screen Render
   if (loading) {
@@ -697,6 +965,18 @@ const MapViewComponent = forwardRef<any, MapViewProps>(({
         <div className="w-10 h-10 border-2 border-accent-blue/30 border-t-accent-blue rounded-full animate-spin" />
         <p className="mt-4 text-[10px] uppercase tracking-widest animate-pulse font-bold text-accent-blue leading-none">
           Loading Vector Geospatial Databases...
+        </p>
+      </div>
+    );
+  }
+
+  // Circuit Breaker System Maintenance Render
+  if (isCircuitOpen) {
+    return (
+      <div className="w-full h-full bg-bg-void flex flex-col items-center justify-center font-mono text-accent-orange select-none p-6 text-center">
+        <p className="text-xs uppercase tracking-wider font-black">⚠️ System Maintenance Mode</p>
+        <p className="text-[10px] text-text-secondary uppercase mt-2 max-w-[280px] leading-relaxed">
+          The meteorological API has exceeded concurrent failure thresholds. Entering fallback protocol. Please try again later.
         </p>
       </div>
     );
@@ -741,10 +1021,16 @@ const MapViewComponent = forwardRef<any, MapViewProps>(({
           )}
 
           {/* GEOGRAPHIC GRID COORDINATES NOTIFICATION */}
-          <div className="absolute top-4 right-4 z-40 pointer-events-none">
+          <div className="absolute top-4 right-4 z-40 pointer-events-none flex flex-col gap-2 items-end">
             <div className="bg-bg-surface/80 border border-border-default backdrop-blur-md px-3 py-1.5 rounded-xl text-[8.5px] font-mono font-extrabold text-text-secondary uppercase">
               ZONE: <span className="text-text-primary">{selectedState ? selectedState : "ALL INDIA SUB-GRID"}</span>
             </div>
+            {activeTimeIndex > 0 && (
+              <div className="bg-accent-purple text-white border border-accent-purple/20 px-3 py-1.5 rounded-xl text-[8.5px] font-mono font-extrabold uppercase flex items-center gap-1.5 animate-pulse shadow-lg">
+                <span className="w-1.5 h-1.5 rounded-full bg-white animate-ping" />
+                <span>AI PREDICTION MODE: ACTIVE</span>
+              </div>
+            )}
           </div>
 
           {/* REALISTIC AGENCY ALERTS OPERATIONAL WINDOW */}
@@ -796,7 +1082,6 @@ const MapViewComponent = forwardRef<any, MapViewProps>(({
           }}>
             ⌖ Reset
           </button>
-
           {/* PRIMARY MAP DRAW CANVAS COMPONENT */}
           <svg
             ref={svgRef}
@@ -807,16 +1092,52 @@ const MapViewComponent = forwardRef<any, MapViewProps>(({
           >
             <g style={{ willChange: 'transform' }}>
               {/* Level 1: render all states */}
+              {/* Level 1: render all states */}
               {level === 'india' && statesGeoRef.current?.features.map((f: any, idx: number) => {
                 const rawName = f.properties.NAME_1 || f.properties.ST_NM || f.properties.STATE || '';
-                const climateVal = getStateValue(rawName);
+                let fillCol = '#cbd5e1';
+
+                try {
+                  const climateVal = getStateValue(rawName);
+                  
+                  // Read from preloaded eager weather telemetry if available
+                  const preloaded = allStatesTelemetry[rawName];
+                  let eagerVal = climateVal;
+                  if (preloaded) {
+                    if (activeLayerId === 'temp' && preloaded.current_weather) {
+                      eagerVal = preloaded.current_weather.temperature;
+                    } else if (activeLayerId === 'wind' && preloaded.current_weather) {
+                      eagerVal = preloaded.current_weather.windspeed;
+                    } else if (preloaded.hourly && preloaded.current_weather) {
+                      const times = preloaded.hourly.time;
+                      const currentTimeStr = preloaded.current_weather.time;
+                      const currentIdx = times.findIndex((t: string) => t.startsWith(currentTimeStr.substring(0, 13)));
+                      if (currentIdx !== -1) {
+                        if (activeLayerId === 'precip') {
+                          eagerVal = preloaded.hourly.precipitation[currentIdx];
+                        } else if (activeLayerId === 'humidity') {
+                          eagerVal = preloaded.hourly.relative_humidity_2m[currentIdx];
+                        } else if (activeLayerId === 'drought') {
+                          const temp = preloaded.hourly.temperature_2m[currentIdx];
+                          const rain = preloaded.hourly.precipitation[currentIdx];
+                          eagerVal = (temp * 0.15) - (rain * 0.05);
+                        }
+                      }
+                    }
+                  }
+                  fillCol = getColor(eagerVal);
+                } catch (err) {
+                  console.error(`Error computing fill color for state ${rawName}:`, err);
+                  fillCol = '#cbd5e1';
+                }
+
                 return (
                   <path
                     key={`state-${rawName}-${idx}`}
                     className="state-path"
                     d={pathGen(f) || ''}
                     data-state={rawName}
-                    fill={getColor(climateVal)}
+                    fill={fillCol}
                     stroke="#ffffff"
                     strokeWidth={0.8}
                     style={{ transition: 'fill 600ms ease-in-out' }} // Smooth color morphing transition animation
@@ -827,30 +1148,21 @@ const MapViewComponent = forwardRef<any, MapViewProps>(({
 
               {/* Level 2 & 3: render districts of selected state only */}
               {(level === 'state' || level === 'district') && (
-                districtsGeoRef.current?.features
-                  .filter((f: any) => {
+                <DistrictsGroup
+                  features={districtsGeoRef.current?.features.filter((f: any) => {
                     const stateProp = f.properties.ST_NM || f.properties.STATE || f.properties.st_nm || f.properties.NAME_1 || '';
                     return stateProp.toLowerCase() === selectedState?.toLowerCase() ||
-                           normalizeStateName(stateProp) === normalizeStateName(selectedState || ''); // matches clean format
-                  })
-                  .map((f: any, idx: number) => {
-                    const dName = f.properties.DISTRICT || f.properties.dtname || f.properties.NAME_2 || f.properties.NAME || '';
-                    const isSelected = dName === selectedDistrict;
-                    const dVal = getDistrictValue(dName, selectedState!);
-
-                    return (
-                      <path
-                        key={`district-${dName}-${idx}`}
-                        className={`district-path ${isSelected ? 'selected' : ''}`}
-                        d={pathGen(f) || ''}
-                        data-district={dName}
-                        fill={isSelected ? 'var(--accent-blue)' : getColor(dVal)}
-                        stroke={isSelected ? '#0f172a' : 'rgba(255,255,255,0.4)'}
-                        strokeWidth={isSelected ? 1.4 : 0.6}
-                        onClick={() => handleDistrictClick(dName)}
-                      />
-                    );
-                  })
+                           normalizeStateName(stateProp) === normalizeStateName(selectedState || '');
+                  }) || []}
+                  selectedState={selectedState!}
+                  selectedDistrict={selectedDistrict}
+                  stateTelemetryValue={stateTelemetryValue}
+                  activeLayerId={activeLayerId}
+                  getColor={getColor}
+                  handleDistrictClick={handleDistrictClick}
+                  pathGen={pathGen}
+                  getDistrictValue={getDistrictValue}
+                />
               )}
             </g>
           </svg>
@@ -876,6 +1188,13 @@ const MapViewComponent = forwardRef<any, MapViewProps>(({
           {level === 'state' && (
             <div className="zoom-hint">
               Scroll to zoom · Drag to pan
+            </div>
+          )}
+
+          {isStale && (
+            <div className="absolute bottom-4 left-4 z-40 bg-accent-orange/95 text-white border border-accent-orange/20 px-3 py-1.5 rounded-xl text-[8px] font-mono font-bold tracking-wider uppercase flex items-center gap-1.5 shadow-lg animate-fade-in">
+              <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />
+              <span>Offline Mode / Using Cached Data</span>
             </div>
           )}
 
@@ -911,7 +1230,9 @@ const MapViewComponent = forwardRef<any, MapViewProps>(({
             <div className="flex-1 overflow-y-auto hide-scrollbar bg-bg-surface">
               {activeTab === 'FORECAST' && <DistrictForecastTab district={selectedDistrict} state={selectedState!} />}
               {activeTab === 'IMD DATA' && <DistrictIMDTab district={selectedDistrict} state={selectedState!} />}
-              {activeTab === 'AGRICULTURE' && <DistrictAgriTab district={selectedDistrict} state={selectedState!} />}
+              {activeTab === 'AGRICULTURE' && selectedState && selectedDistrict ? (
+                <AgricultureView district={selectedDistrict} state={selectedState} />
+              ) : null}
               {activeTab === 'ANALYSIS' && <DistrictAnalysisTab district={selectedDistrict} state={selectedState!} />}
             </div>
           </div>

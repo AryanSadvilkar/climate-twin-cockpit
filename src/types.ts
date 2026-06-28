@@ -1,6 +1,6 @@
 export type PanelTab = "dashboard" | "analytics" | "reports" | "map";
 
-export type WeatherLayer = "temp" | "precip" | "wind" | "pressure";
+export type WeatherLayer = "temp" | "precip" | "wind" | "pressure" | "humidity" | "drought" | "cloud";
 
 export interface LayerConfig {
   id: WeatherLayer;

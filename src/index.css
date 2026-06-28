@@ -427,6 +427,14 @@ input[type="range"]::-webkit-slider-thumb:hover {
   filter: brightness(1.28) saturate(1.1);
 }
 
+@keyframes pulseDistrict {
+  0%, 100% { fill: #cbd5e1; opacity: 1; }
+  50% { fill: #94a3b8; opacity: 0.7; }
+}
+.pulse-animate {
+  animation: pulseDistrict 1.8s infinite ease-in-out;
+}
+
 .reset-view-btn {
   position: absolute;
   bottom: 80px; right: 16px;
