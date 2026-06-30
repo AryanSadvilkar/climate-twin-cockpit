@@ -3,12 +3,12 @@ import { PanelTab, WeatherLayer, SimulationParams } from "./types";
 import DashboardView from "./components/DashboardView";
 import AnalyticsView from "./components/AnalyticsView";
 import ReportsView from "./components/ReportsView";
-
+import { Thermometer, CloudRain, Droplets, Gauge, Wind, BrainCircuit, AlertTriangle, LayoutDashboard, BarChart2, FileText } from "lucide-react";
 export default function App() {
   const [activeTab, setActiveTab] = useState<PanelTab>("dashboard");
   const [isMissionControl, setIsMissionControl] = useState(false);
   const [activeLayer, setActiveLayer] = useState<WeatherLayer>("temp");
-  const [selectedRegion, setSelectedRegion] = useState<string>("Central India"); // Global map target anchor
+  const [selectedRegion, setSelectedRegion] = useState<string>("Maharashtra"); // Global map target anchor
   const [simulation, setSimulation] = useState<SimulationParams>({
     tempOffset: 0.0,
     rainIntensity: 100
@@ -55,76 +55,166 @@ export default function App() {
   return (
     <div className="w-full h-screen bg-bg-void text-text-primary flex flex-col font-sans overflow-hidden">
       {!isMissionControl && (
-        <header className="h-14 border-b border-border-default bg-bg-surface backdrop-blur-md flex items-center justify-between px-8 z-50 shrink-0 select-none">
-          
-          {/* Brand identity */}
-          <div className="flex items-center gap-3">
-            <div className="w-7 h-7 bg-accent-blue rounded-lg flex items-center justify-center text-text-primary shadow-md hover:scale-105 active:scale-95 transition-all">
-              <svg viewBox="0 0 24 24" fill="none" className="w-4 h-4 stroke-current" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z" />
-                <polyline points="7.5 4.21 12 6.81 16.5 4.21" />
-                <polyline points="7.5 19.79 7.5 14.6 12 12 16.5 14.6 16.5 19.79" />
-                <polyline points="12 22 12 12" />
-              </svg>
+        <div className="flex flex-col shrink-0 z-50" style={{ border: 'none', borderBottom: 'none', boxShadow: 'none' }}>
+          {/* HERO HEADER */}
+          <header className="px-6 py-2 bg-white flex flex-col xl:flex-row items-center justify-between gap-6 relative z-50" style={{ border: 'none', boxShadow: 'none' }}>
+            
+            {/* LEFT: Branding & Status */}
+            <div className="flex items-center gap-4 w-full xl:w-auto justify-between xl:justify-start">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 bg-gradient-to-br from-accent-blue to-accent-cyan rounded-xl flex items-center justify-center text-bg-void shadow-[0_0_15px_rgba(6,182,212,0.5)] flex-shrink-0">
+                  <svg viewBox="0 0 24 24" fill="none" className="w-6 h-6 stroke-current" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z" />
+                    <polyline points="7.5 4.21 12 6.81 16.5 4.21" />
+                    <polyline points="7.5 19.79 7.5 14.6 12 12 16.5 14.6 16.5 19.79" />
+                    <polyline points="12 22 12 12" />
+                  </svg>
+                </div>
+                <div className="flex flex-col">
+                  <h1 className="text-2xl font-brand font-bold text-[#111827] tracking-tight leading-none">
+                    BHOOMI-TWIN
+                  </h1>
+                  <span className="text-[11px] font-sans font-medium text-[#6b7280] uppercase tracking-wider leading-tight mt-1">
+                    India's Climate Digital Twin
+                  </span>
+                  <div className="flex items-center gap-2 mt-1.5">
+                    <div className="flex items-center gap-1.5 bg-gray-100 px-1.5 py-0.5 rounded border border-gray-200">
+                      <span className="w-1.5 h-1.5 rounded-full bg-accent-green animate-pulse" />
+                      <span className="text-[8px] font-mono text-[#6b7280] uppercase">INSAT-3DR LIVE</span>
+                    </div>
+                    <div className="flex items-center gap-1.5 bg-gray-100 px-1.5 py-0.5 rounded border border-gray-200 hidden xl:flex">
+                      <span className="w-1.5 h-1.5 rounded-full bg-accent-blue" />
+                      <span className="text-[8px] font-mono text-[#6b7280] uppercase">GFS Model</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              
+              {/* Mobile Tabs (hidden on xl) */}
+              <nav className="flex xl:hidden items-center gap-1" style={{ background: 'transparent', border: 'none', boxShadow: 'none' }}>
+                <button
+                  onClick={() => setActiveTab("dashboard")}
+                  className={`flex items-center gap-2 px-4 py-2 text-[14px] font-sans transition-all tracking-wide rounded-full ${
+                    activeTab === "dashboard"
+                      ? "bg-[#111827] text-[#ffffff] font-semibold"
+                      : "bg-transparent text-[#6b7280] hover:text-[#111827]"
+                  }`}
+                >
+                  <LayoutDashboard className="w-4 h-4" />
+                  Dash
+                </button>
+                <button
+                  onClick={() => setActiveTab("analytics")}
+                  className={`flex items-center gap-2 px-4 py-2 text-[14px] font-sans transition-all tracking-wide rounded-full ${
+                    activeTab === "analytics"
+                      ? "bg-[#111827] text-[#ffffff] font-semibold"
+                      : "bg-transparent text-[#6b7280] hover:text-[#111827]"
+                  }`}
+                >
+                  <BarChart2 className="w-4 h-4" />
+                  Ana
+                </button>
+                <button
+                  onClick={() => setActiveTab("reports")}
+                  className={`flex items-center gap-2 px-4 py-2 text-[14px] font-sans transition-all tracking-wide rounded-full ${
+                    activeTab === "reports"
+                      ? "bg-[#111827] text-[#ffffff] font-semibold"
+                      : "bg-transparent text-[#6b7280] hover:text-[#111827]"
+                  }`}
+                >
+                  <FileText className="w-4 h-4" />
+                  Rep
+                </button>
+              </nav>
             </div>
-            <div className="flex flex-col">
-              <h1 className="text-xs font-display font-black text-text-primary tracking-tight leading-tight">
-                CLIMATESYNC <span className="text-accent-blue">INDIA</span>
-              </h1>
-              <div className="flex items-center gap-1 leading-none mt-0.5">
-                <span className="w-1.5 h-1.5 rounded-full bg-accent-green animate-pulse" />
-                <span className="text-[8px] font-mono font-bold tracking-wider text-text-secondary uppercase leading-none">
-                  LIVE • INSAT-3DR
-                </span>
+
+            {/* CENTER: Climate Intelligence Chips */}
+            <div className="flex items-center gap-3 overflow-x-auto hide-scrollbar w-full xl:w-auto xl:flex-1 justify-start xl:justify-center pb-2 xl:pb-0 bg-transparent">
+              <div className="flex items-center gap-1.5 px-3 py-1 bg-[#f9fafb] border border-gray-200 rounded-lg group">
+                <Thermometer className="w-4 h-4 text-[#374151] group-hover:scale-110 transition-transform" />
+                <div className="flex flex-col">
+                  <span className="text-[9px] font-sans font-medium text-[#6b7280] uppercase">Mean Temp</span>
+                  <span className="text-[13px] font-sans font-bold text-[#111827] mt-0.5">28.4°C</span>
+                </div>
+              </div>
+              <div className="flex items-center gap-1.5 px-3 py-1 bg-[#f9fafb] border border-gray-200 rounded-lg group">
+                <CloudRain className="w-4 h-4 text-[#374151] group-hover:scale-110 transition-transform" />
+                <div className="flex flex-col">
+                  <span className="text-[9px] font-sans font-medium text-[#6b7280] uppercase">Precip</span>
+                  <span className="text-[13px] font-sans font-bold text-[#111827] mt-0.5">12.5 <span className="text-[10px] font-medium">mm</span></span>
+                </div>
+              </div>
+              <div className="flex items-center gap-1.5 px-3 py-1 bg-[#f9fafb] border border-gray-200 rounded-lg group">
+                <Droplets className="w-4 h-4 text-[#374151] group-hover:scale-110 transition-transform" />
+                <div className="flex flex-col">
+                  <span className="text-[9px] font-sans font-medium text-[#6b7280] uppercase">Humidity</span>
+                  <span className="text-[13px] font-sans font-bold text-[#111827] mt-0.5">64%</span>
+                </div>
+              </div>
+              <div className="hidden sm:flex items-center gap-1.5 px-3 py-1 bg-[#f9fafb] border border-gray-200 rounded-lg group">
+                <Wind className="w-4 h-4 text-[#374151] group-hover:scale-110 transition-transform" />
+                <div className="flex flex-col">
+                  <span className="text-[9px] font-sans font-medium text-[#6b7280] uppercase">Wind</span>
+                  <span className="text-[13px] font-sans font-bold text-[#111827] mt-0.5">14 <span className="text-[10px] font-medium">km/h</span></span>
+                </div>
+              </div>
+              <div className="hidden lg:flex items-center gap-1.5 px-3 py-1 bg-[#f9fafb] border border-gray-200 rounded-lg group">
+                <Gauge className="w-4 h-4 text-[#374151] group-hover:scale-110 transition-transform" />
+                <div className="flex flex-col">
+                  <span className="text-[9px] font-sans font-medium text-[#6b7280] uppercase">Pressure</span>
+                  <span className="text-[13px] font-sans font-bold text-[#111827] mt-0.5">1012 <span className="text-[10px] font-medium">hPa</span></span>
+                </div>
+              </div>
+              <div className="flex items-center gap-1.5 px-3 py-1 bg-[#f9fafb] border border-gray-200 rounded-lg group">
+                <BrainCircuit className="w-4 h-4 text-[#374151] group-hover:scale-110 transition-transform" />
+                <div className="flex flex-col">
+                  <span className="text-[9px] font-sans font-medium text-[#6b7280] uppercase">AI Conf</span>
+                  <span className="text-[13px] font-sans font-bold text-[#059669] mt-0.5">98.2%</span>
+                </div>
               </div>
             </div>
-          </div>
 
-          {/* Tab panels switcher - ONLY DASHBOARD, ANALYTICS, REPORTS */}
-          <nav className="flex items-center gap-1 h-full">
-            <button 
-              onClick={() => setActiveTab("dashboard")}
-              className={`px-6 h-full text-[11px] font-mono cursor-pointer uppercase transition-all flex items-center border-b-2 font-black tracking-wider ${
-                activeTab === "dashboard"
-                  ? "border-accent-blue text-accent-blue"
-                  : "border-transparent text-text-secondary hover:text-text-primary"
-              }`}
-            >
-              DASHBOARD
-            </button>
-            
-            <button 
-              onClick={() => setActiveTab("analytics")}
-              className={`px-6 h-full text-[11px] font-mono cursor-pointer uppercase transition-all flex items-center border-b-2 font-black tracking-wider ${
-                activeTab === "analytics"
-                  ? "border-accent-blue text-accent-blue"
-                  : "border-transparent text-text-secondary hover:text-text-primary"
-              }`}
-            >
-              ANALYTICS
-            </button>
-            
-            <button 
-              onClick={() => setActiveTab("reports")}
-              className={`px-6 h-full text-[11px] font-mono cursor-pointer uppercase transition-all flex items-center border-b-2 font-black tracking-wider ${
-                activeTab === "reports"
-                  ? "border-accent-blue text-accent-blue"
-                  : "border-transparent text-text-secondary hover:text-text-primary"
-              }`}
-            >
-              REPORTS
-            </button>
-          </nav>
-
-          {/* Model status & operator av */}
-          <div className="flex items-center gap-4">
-            <div className="nav-badges">
-              <span className="nav-badge">MODEL: GFS-382</span>
-              <span className="nav-badge live">● INSAT-3DR</span>
-              <span className="nav-badge confidence">✦ 98.4% CONFIDENCE</span>
+            {/* RIGHT: Metadata & Tabs (Desktop) */}
+            <div className="hidden xl:flex items-center w-auto">
+              
+              <nav className="flex items-center gap-2" style={{ background: 'transparent', border: 'none', boxShadow: 'none' }}>
+                <button
+                  onClick={() => setActiveTab("dashboard")}
+                  className={`flex items-center gap-2 px-4 py-2 text-[14px] font-sans transition-all tracking-wide rounded-full ${
+                    activeTab === "dashboard"
+                      ? "bg-[#111827] text-[#ffffff] font-semibold"
+                      : "bg-transparent text-[#6b7280] hover:text-[#111827]"
+                  }`}
+                >
+                  <LayoutDashboard className="w-4 h-4" />
+                  Dashboard
+                </button>
+                <button
+                  onClick={() => setActiveTab("analytics")}
+                  className={`flex items-center gap-2 px-4 py-2 text-[14px] font-sans transition-all tracking-wide rounded-full ${
+                    activeTab === "analytics"
+                      ? "bg-[#111827] text-[#ffffff] font-semibold"
+                      : "bg-transparent text-[#6b7280] hover:text-[#111827]"
+                  }`}
+                >
+                  <BarChart2 className="w-4 h-4" />
+                  Analytics
+                </button>
+                <button
+                  onClick={() => setActiveTab("reports")}
+                  className={`flex items-center gap-2 px-4 py-2 text-[14px] font-sans transition-all tracking-wide rounded-full ${
+                    activeTab === "reports"
+                      ? "bg-[#111827] text-[#ffffff] font-semibold"
+                      : "bg-transparent text-[#6b7280] hover:text-[#111827]"
+                  }`}
+                >
+                  <FileText className="w-4 h-4" />
+                  Reports
+                </button>
+              </nav>
             </div>
-          </div>
-        </header>
+          </header>
+        </div>
       )}
 
       {/* TAB TRANSITION PANEL */}

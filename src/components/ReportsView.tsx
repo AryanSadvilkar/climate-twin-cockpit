@@ -179,7 +179,7 @@ export default function ReportsView({ simulation, activeLayer, selectedRegion }:
 
   const handleExportCSVGrid = () => {
     // 1. Build CSV header matrix rows
-    let csvContent = "State,Simulated_Temperature(C),Simulated_Precipitation(mm),Simulated_Humidity(%),Simulated_Drought_Index\n";
+    let csvContent = "State,Simulated_Temperature(C),Simulated_Precipitation(mm),Simulated_Humidity(%),Simulated_Solar_Radiation(W/m2)\n";
 
     // 2. Iterate through all states to apply live simulator offsets
     Object.keys(STATE_DATA).forEach((stateName) => {
@@ -195,9 +195,9 @@ export default function ReportsView({ simulation, activeLayer, selectedRegion }:
       const dynamicTemp = (climate.temp + (climate.temp * valShift) + simulation.tempOffset).toFixed(1);
       const dynamicPrecip = (climate.rain * (1 + valShift) * (simulation.rainIntensity / 100)).toFixed(1);
       const dynamicHumid = (climate.humidity * (1 + valShift)).toFixed(1);
-      const dynamicDrought = (climate.drought * (1 + valShift) * (simulation.tempOffset > 0 ? (1 + simulation.tempOffset * 0.1) : 1)).toFixed(2);
+      const dynamicSolar = (climate.solar * (1 + valShift) * (1 - (simulation.tempOffset * 0.02))).toFixed(1);
 
-      csvContent += `"${stateName}",${dynamicTemp},${dynamicPrecip},${dynamicHumid},${dynamicDrought}\n`;
+      csvContent += `"${stateName}",${dynamicTemp},${dynamicPrecip},${dynamicHumid},${dynamicSolar}\n`;
     });
 
     // 3. Trigger immediate client-side binary blob download sequence
@@ -297,16 +297,16 @@ export default function ReportsView({ simulation, activeLayer, selectedRegion }:
   };
 
   return (
-    <div className="w-full h-full p-6 text-slate-800 overflow-y-auto hide-scrollbar select-none bg-slate-50">
+    <div className="w-full h-full p-6 text-text-primary overflow-y-auto hide-scrollbar select-none bg-transparent">
       <div className="max-w-4xl mx-auto space-y-6 pb-12">
         {/* Reports Header */}
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border-b border-slate-200 pb-4">
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border-b border-border-default pb-4">
           <div>
-            <h2 className="text-lg font-display font-black text-slate-900 flex items-center gap-2">
-              <FileText className="w-5 h-5 text-indigo-600" />
+            <h2 className="text-lg font-display font-black text-text-primary flex items-center gap-2">
+              <FileText className="w-5 h-5 text-accent-blue" />
               COGNITIVE TWIN EXECUTIVE REPORTS
             </h2>
-            <p className="text-xs text-slate-500 mt-0.5">
+            <p className="text-xs text-text-secondary mt-0.5">
               Leverage Google Gemini modeling to generate real-time meteorology and policy hazard assessments based on What-If simulator parameters.
             </p>
           </div>
@@ -314,7 +314,7 @@ export default function ReportsView({ simulation, activeLayer, selectedRegion }:
 
         {/* Global Warnings Panel */}
         {error && (
-          <div className="bg-rose-50 border border-rose-200 p-4 rounded-2xl text-xs text-rose-700 flex items-start gap-2.5 shadow-sm">
+          <div className="bg-rose-50/70 backdrop-blur-md border border-rose-200 p-4 rounded-2xl text-xs text-rose-700 flex items-start gap-2.5 shadow-sm animate-pulse">
             <AlertCircle className="w-4 h-4 shrink-0 mt-0.5 text-rose-600" />
             <div className="space-y-1">
               <p className="font-sans font-black uppercase">API Connection Notification</p>
@@ -324,8 +324,8 @@ export default function ReportsView({ simulation, activeLayer, selectedRegion }:
         )}
 
         {/* Telemetry Input Monitor CLI Panel */}
-        <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm border-l-4 border-amber-500 font-mono text-[10px] text-slate-500 space-y-3">
-          <div className="flex items-center gap-2 text-amber-600 font-black">
+        <div className="bg-bg-surface p-5 rounded-2xl border border-border-default shadow-sm border-l-4 border-l-accent-orange font-mono text-[10px] text-text-secondary space-y-3">
+          <div className="flex items-center gap-2 text-accent-orange font-black">
             <Terminal className="w-4 h-4" />
             <span>ACTIVE METEOROLOGICAL TELEMETRY STREAM</span>
           </div>
@@ -333,27 +333,27 @@ export default function ReportsView({ simulation, activeLayer, selectedRegion }:
           <div className="grid grid-cols-2 md:grid-cols-5 gap-4 text-left">
             <div>
               <span className="opacity-60 text-[9px] font-bold">STATION LOCATION:</span>
-              <p className="text-slate-900 font-extrabold uppercase mt-0.5">{activeLocation}</p>
+              <p className="text-text-primary font-extrabold uppercase mt-0.5">{activeLocation}</p>
             </div>
             <div>
               <span className="opacity-60 text-[9px] font-bold">WHAT-IF TEMP OFFSET:</span>
-              <p className="text-orange-600 font-extrabold mt-0.5">
+              <p className="text-accent-orange font-extrabold mt-0.5">
                 {simulation.tempOffset > 0 ? "+" : ""}{simulation.tempOffset.toFixed(1)}°C
               </p>
             </div>
             <div>
               <span className="opacity-60 text-[9px] font-bold">PRECIPITATION MULTIPLIER:</span>
-              <p className="text-indigo-600 font-extrabold mt-0.5">{simulation.rainIntensity}%</p>
+              <p className="text-accent-cyan font-extrabold mt-0.5">{simulation.rainIntensity}%</p>
             </div>
             <div>
               <span className="opacity-60 text-[9px] font-bold">MAP DISPLAY LAYER:</span>
-              <p className="text-slate-900 font-extrabold uppercase mt-0.5">{activeLayer}</p>
+              <p className="text-text-primary font-extrabold uppercase mt-0.5">{activeLayer}</p>
             </div>
             
             {/* HISTORICAL CONTRAST LAYER NODE */}
-            <div className="border-l border-slate-200 pl-4 col-span-2 md:col-span-1">
-              <span className="text-indigo-600 text-[9px] font-black tracking-wider block">HISTORICAL ANOMALY:</span>
-              <p className="text-[11px] font-mono font-black text-slate-900 mt-0.5">
+            <div className="border-l border-border-default pl-4 col-span-2 md:col-span-1">
+              <span className="text-accent-blue text-[9px] font-black tracking-wider block">HISTORICAL ANOMALY:</span>
+              <p className="text-[11px] font-mono font-black text-text-primary mt-0.5">
                 {simulation.tempOffset > 0 ? `+${(simulation.tempOffset * 1.4).toFixed(0)}% VS BASELINE` : "NOMINAL VARIANCE"}
               </p>
             </div>
@@ -367,48 +367,48 @@ export default function ReportsView({ simulation, activeLayer, selectedRegion }:
           return (
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 animate-fade-in">
               {/* Temp Card */}
-              <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex flex-col justify-between">
+              <div className="panel-card bg-bg-surface p-5 rounded-2xl border border-border-default shadow-sm flex flex-col justify-between">
                 <div>
-                  <span className="text-[9px] font-mono font-black text-slate-400 uppercase tracking-widest block">TEMPERATURE</span>
-                  <p className="text-2xl font-mono font-black text-slate-900 mt-2">
+                  <span className="text-[9px] font-mono font-black text-text-muted uppercase tracking-widest block">TEMPERATURE</span>
+                  <p className="text-2xl font-mono font-black text-text-primary mt-2">
                     {trends.currentTemp.toFixed(1)}°C
                   </p>
                 </div>
-                <div className="mt-3 pt-3 border-t border-slate-100 flex justify-between items-center text-[9.5px] font-mono">
-                  <span className="text-slate-500">24H TREND:</span>
-                  <span className={`font-black ${trends.tempTrend >= 0 ? "text-rose-600" : "text-emerald-600"}`}>
+                <div className="mt-3 pt-3 border-t border-border-default flex justify-between items-center text-[9.5px] font-mono">
+                  <span className="text-text-muted">24H TREND:</span>
+                  <span className={`font-black ${trends.tempTrend >= 0 ? "text-accent-red" : "text-accent-green"}`}>
                     {trends.tempTrend >= 0 ? "▲ INCREASED" : "▼ DECREASED"} ({Math.abs(trends.tempTrend).toFixed(1)}°C)
                   </span>
                 </div>
               </div>
 
               {/* Precipitation Card */}
-              <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex flex-col justify-between">
+              <div className="panel-card bg-bg-surface p-5 rounded-2xl border border-border-default shadow-sm flex flex-col justify-between">
                 <div>
-                  <span className="text-[9px] font-mono font-black text-slate-400 uppercase tracking-widest block">PRECIPITATION</span>
-                  <p className="text-2xl font-mono font-black text-slate-900 mt-2">
+                  <span className="text-[9px] font-mono font-black text-text-muted uppercase tracking-widest block">PRECIPITATION</span>
+                  <p className="text-2xl font-mono font-black text-text-primary mt-2">
                     {trends.currentPrecip.toFixed(1)} mm
                   </p>
                 </div>
-                <div className="mt-3 pt-3 border-t border-slate-100 flex justify-between items-center text-[9.5px] font-mono">
-                  <span className="text-slate-500">24H TREND:</span>
-                  <span className={`font-black ${trends.precipTrend >= 0 ? "text-blue-600" : "text-emerald-600"}`}>
+                <div className="mt-3 pt-3 border-t border-border-default flex justify-between items-center text-[9.5px] font-mono">
+                  <span className="text-text-muted">24H TREND:</span>
+                  <span className={`font-black ${trends.precipTrend >= 0 ? "text-accent-cyan" : "text-accent-green"}`}>
                     {trends.precipTrend >= 0 ? "▲ INCREASED" : "▼ DECREASED"} ({Math.abs(trends.precipTrend).toFixed(1)} mm)
                   </span>
                 </div>
               </div>
 
               {/* Humidity Card */}
-              <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex flex-col justify-between">
+              <div className="panel-card bg-bg-surface p-5 rounded-2xl border border-border-default shadow-sm flex flex-col justify-between">
                 <div>
-                  <span className="text-[9px] font-mono font-black text-slate-400 uppercase tracking-widest block">RELATIVE HUMIDITY</span>
-                  <p className="text-2xl font-mono font-black text-slate-900 mt-2">
+                  <span className="text-[9px] font-mono font-black text-text-muted uppercase tracking-widest block">RELATIVE HUMIDITY</span>
+                  <p className="text-2xl font-mono font-black text-text-primary mt-2">
                     {Math.round(trends.currentHumidity)}%
                   </p>
                 </div>
-                <div className="mt-3 pt-3 border-t border-slate-100 flex justify-between items-center text-[9.5px] font-mono">
-                  <span className="text-slate-500">24H TREND:</span>
-                  <span className={`font-black ${trends.humidityTrend >= 0 ? "text-indigo-600" : "text-amber-600"}`}>
+                <div className="mt-3 pt-3 border-t border-border-default flex justify-between items-center text-[9.5px] font-mono">
+                  <span className="text-text-muted">24H TREND:</span>
+                  <span className={`font-black ${trends.humidityTrend >= 0 ? "text-accent-blue" : "text-accent-orange"}`}>
                     {trends.humidityTrend >= 0 ? "▲ INCREASED" : "▼ DECREASED"} ({Math.abs(trends.humidityTrend).toFixed(1)}%)
                   </span>
                 </div>
@@ -419,10 +419,10 @@ export default function ReportsView({ simulation, activeLayer, selectedRegion }:
 
         {/* Dynamic Model Variance Guardrail Alert */}
         {(simulation.tempOffset > 3.0 && simulation.rainIntensity > 150) && (
-          <div className="bg-amber-50 border border-amber-200 p-4 rounded-2xl text-[11px] text-amber-800 flex items-start gap-2.5 shadow-sm animate-pulse">
-            <AlertCircle className="w-4 h-4 shrink-0 mt-0.5 text-amber-600" />
+          <div className="bg-accent-orange/15 border border-accent-orange/30 p-4 rounded-2xl text-[11px] text-accent-orange flex items-start gap-2.5 shadow-sm animate-pulse">
+            <AlertCircle className="w-4 h-4 shrink-0 mt-0.5 text-accent-orange" />
             <div className="space-y-0.5">
-              <p className="font-sans font-black uppercase tracking-wider text-amber-950">TWIN MODEL BOUNDS DETECTED</p>
+              <p className="font-sans font-black uppercase tracking-wider text-text-primary">TWIN MODEL BOUNDS DETECTED</p>
               <p className="font-medium">
                 Combined high-range boundaries (+{simulation.tempOffset.toFixed(1)}°C thermal forcing / {simulation.rainIntensity}% precipitation grid loading) match historical anomaly limits. GFS mathematical ensembles are maintaining localized verification tracking protocols.
               </p>
@@ -433,15 +433,15 @@ export default function ReportsView({ simulation, activeLayer, selectedRegion }:
         {/* Active Action state: Empty state vs Loader vs Display */}
         {/* Dynamic Presentation Hook Container */}
         {!hasGeneratedThisSession && !isLoading ? (
-          <div className="bg-white p-8 rounded-2xl border border-slate-200 shadow-sm text-center flex flex-col items-center justify-center gap-4 py-16">
-            <div className="w-12 h-12 rounded-full bg-blue-50 border border-blue-100 flex items-center justify-center text-[#1e3a8a] shadow-sm">
+          <div className="panel-card bg-bg-surface p-8 rounded-2xl border border-border-default shadow-sm text-center flex flex-col items-center justify-center gap-4 py-16">
+            <div className="w-12 h-12 rounded-full bg-accent-blue/10 border border-accent-blue/20 flex items-center justify-center text-accent-blue shadow-sm">
               <Cpu className="w-6 h-6 animate-pulse" />
             </div>
             <div className="space-y-1">
-              <h3 className="text-xs font-sans font-black text-slate-800 tracking-wider uppercase">
+              <h3 className="text-xs font-sans font-black text-text-primary tracking-wider uppercase">
                 Awaiting Climate Twin Data Target Ingress
               </h3>
-              <p className="text-[11px] text-slate-500 max-w-sm leading-relaxed">
+              <p className="text-[11px] text-text-secondary max-w-sm leading-relaxed">
                 {`Live variables captured: Shift of ${simulation.tempOffset > 0 ? "+" : ""}${simulation.tempOffset.toFixed(1)}°C at ${simulation.rainIntensity}% precipitation forcing. Click below to synthesize the national diagnostic briefing.`}
               </p>
             </div>
@@ -464,19 +464,19 @@ export default function ReportsView({ simulation, activeLayer, selectedRegion }:
                   ]);
                 }, 1600);
               }}
-              className="px-6 py-2.5 bg-[#1e3a8a] text-white text-xs font-sans font-black rounded-xl hover:bg-blue-900 active:scale-95 transition-all shadow-md shadow-blue-100 cursor-pointer uppercase tracking-wider"
+              className="px-6 py-2.5 bg-accent-blue text-white text-xs font-sans font-black rounded-xl hover:bg-blue-900 active:scale-95 transition-all shadow-md shadow-blue-100 cursor-pointer uppercase tracking-wider"
             >
               Synthesize Executive Report
             </button>
           </div>
         ) : isLoading ? (
-          <div className="bg-white p-8 rounded-2xl border border-slate-200 shadow-sm text-center flex flex-col items-center justify-center gap-6 py-16">
+          <div className="panel-card bg-bg-surface p-8 rounded-2xl border border-border-default shadow-sm text-center flex flex-col items-center justify-center gap-6 py-16">
             <div className="relative">
-              <div className="w-14 h-14 rounded-full border-2 border-dashed border-[#1e3a8a] animate-spin ease-linear shrink-0" />
-              <Bot className="w-6 h-6 text-[#1e3a8a] absolute top-4 left-4 animate-bounce" />
+              <div className="w-14 h-14 rounded-full border-2 border-dashed border-accent-blue animate-spin ease-linear shrink-0" />
+              <Bot className="w-6 h-6 text-accent-blue absolute top-4 left-4 animate-bounce" />
             </div>
             <div className="space-y-2">
-              <p className="text-[10px] font-mono text-[#1e3a8a] animate-pulse uppercase tracking-widest font-black">
+              <p className="text-[10px] font-mono text-accent-blue animate-pulse uppercase tracking-widest font-black">
                 {loaderLabels[loadStep]}
               </p>
             </div>
@@ -484,17 +484,17 @@ export default function ReportsView({ simulation, activeLayer, selectedRegion }:
         ) : (
           /* Markdown Display HUD */
           <div className="space-y-4">
-            <div className="bg-white p-6 rounded-2xl border border-slate-200 border-l-4 border-l-[#1e3a8a] shadow-sm text-left select-text relative">
+            <div className="panel-card bg-bg-surface p-6 rounded-2xl border border-border-default border-l-4 border-l-accent-blue shadow-sm text-left select-text relative">
               <div className="absolute top-4 right-4 flex items-center gap-2 pointer-events-auto">
                 <button 
                   onClick={handleExportCSVGrid}
-                  className="p-1.5 px-3 rounded-lg bg-indigo-50 hover:bg-indigo-100 text-[9px] font-mono border border-indigo-200 text-indigo-700 font-extrabold transition-all cursor-pointer"
+                  className="p-1.5 px-3 rounded-lg bg-accent-blue/10 hover:bg-accent-blue/20 text-[9px] font-mono border border-accent-blue/20 text-accent-blue font-extrabold transition-all cursor-pointer"
                 >
                   📥 EXPORT MET-GRID CSV
                 </button>
                 <button 
                   onClick={() => setHasGeneratedThisSession(false)}
-                  className="p-1.5 px-3 rounded-lg bg-slate-50 hover:bg-slate-100 text-[9px] font-mono border border-slate-200 text-slate-700 font-extrabold transition-all cursor-pointer"
+                  className="p-1.5 px-3 rounded-lg bg-bg-elevated/40 hover:bg-bg-elevated/80 text-[9px] font-mono border border-border-default text-text-primary font-extrabold transition-all cursor-pointer"
                 >
                   RE-SYNTHESIZE NEW DATA
                 </button>
@@ -508,19 +508,19 @@ export default function ReportsView({ simulation, activeLayer, selectedRegion }:
         )}
 
         {/* Real-Time Interactive Climate AI Chat Assistant Panel */}
-        <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 border-t-4 border-indigo-600 flex flex-col gap-4">
-          <div className="flex items-center gap-2 border-b border-slate-100 pb-2.5">
-            <Bot className="w-4 h-4 text-indigo-600" />
-            <h3 className="text-[10px] font-sans font-black text-slate-700 tracking-wider uppercase">
+        <div className="panel-card bg-bg-surface rounded-2xl border border-border-default shadow-sm p-6 border-t-4 border-t-accent-blue flex flex-col gap-4">
+          <div className="flex items-center gap-2 border-b border-border-default pb-2.5">
+            <Bot className="w-4 h-4 text-accent-blue" />
+            <h3 className="text-[10px] font-sans font-black text-text-primary tracking-wider uppercase">
               INTERACTIVE SCENARIO ADVISORY CHAT
             </h3>
           </div>
 
           {/* Messages Flow Area */}
-          <div className="space-y-4 max-h-[300px] overflow-y-auto pr-1 hide-scrollbar bg-slate-50/50 p-4 rounded-2xl border border-slate-200">
+          <div className="space-y-4 max-h-[300px] overflow-y-auto pr-1 hide-scrollbar bg-bg-elevated/20 p-4 rounded-2xl border border-border-default">
             {chatMessages.length === 0 && (
               <div className="text-center py-6">
-                <span className="text-[10px] font-mono text-slate-400 uppercase font-black tracking-wider">
+                <span className="text-[10px] font-mono text-text-muted uppercase font-black tracking-wider">
                   Conversation state is empty. Click synthesize report above to initiate AI advisor module.
                 </span>
               </div>
@@ -532,16 +532,16 @@ export default function ReportsView({ simulation, activeLayer, selectedRegion }:
                 className={`flex gap-3 text-xs text-left ${msg.role === "user" ? "justify-end" : "justify-start"}`}
               >
                 {msg.role !== "user" && (
-                  <div className="w-6 h-6 rounded bg-indigo-50 border border-indigo-200/50 flex items-center justify-center shrink-0">
-                    <Sparkles className="w-3.5 h-3.5 text-indigo-600" />
+                  <div className="w-6 h-6 rounded bg-accent-blue/10 border border-accent-blue/20 flex items-center justify-center shrink-0">
+                    <Sparkles className="w-3.5 h-3.5 text-accent-blue" />
                   </div>
                 )}
                 
                 <div 
                   className={`p-3 rounded-2xl max-w-[85%] leading-relaxed ${
                     msg.role === "user" 
-                      ? "bg-indigo-50 border border-indigo-200/50 text-slate-800 rounded-tr-sm font-bold shadow-sm" 
-                      : "bg-white border border-slate-200/80 text-slate-700 font-medium select-text shadow-sm"
+                      ? "bg-accent-blue/15 border border-accent-blue/30 text-text-primary rounded-tr-sm font-bold shadow-sm" 
+                      : "bg-bg-surface/80 border border-border-default/60 text-text-secondary font-medium select-text shadow-sm"
                   }`}
                 >
                   {msg.role === "user" ? msg.content : renderMarkdown(msg.content)}
@@ -550,10 +550,10 @@ export default function ReportsView({ simulation, activeLayer, selectedRegion }:
             ))}
             {isChatLoading && (
               <div className="flex gap-3 text-xs justify-start items-center">
-                <div className="w-6 h-6 rounded bg-indigo-50 border border-indigo-200 flex items-center justify-center animate-spin">
-                  <Cpu className="w-3.5 h-3.5 text-indigo-600" />
+                <div className="w-6 h-6 rounded bg-accent-blue/10 border border-accent-blue/20 flex items-center justify-center animate-spin">
+                  <Cpu className="w-3.5 h-3.5 text-accent-blue" />
                 </div>
-                <span className="text-[9px] font-mono text-indigo-600 animate-pulse font-bold uppercase">ClimateTwin AI formulating real-time hazard advice...</span>
+                <span className="text-[9px] font-mono text-accent-blue animate-pulse font-bold uppercase">ClimateTwin AI formulating real-time hazard advice...</span>
               </div>
             )}
           </div>
@@ -566,12 +566,12 @@ export default function ReportsView({ simulation, activeLayer, selectedRegion }:
               onChange={(e) => setUserQuery(e.target.value)}
               placeholder="Ask: 'What are the flood implications for Samudrapur under +3°C scenarios?'..."
               disabled={isChatLoading}
-              className="flex-1 bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-xs focus:outline-none focus:border-indigo-500 focus:bg-white placeholder-slate-400 disabled:opacity-50 text-slate-800 font-medium transition-all"
+              className="flex-1 bg-bg-surface/60 border border-border-default rounded-xl px-4 py-3 text-xs focus:outline-none focus:border-accent-blue focus:bg-bg-surface placeholder-text-muted disabled:opacity-50 text-text-primary font-medium transition-all"
             />
             <button 
               type="submit"
               disabled={isChatLoading || !userQuery.trim()}
-              className="bg-indigo-600 hover:bg-indigo-700 disabled:opacity-55 duration-150 rounded-xl px-5 py-3 flex items-center justify-center text-white cursor-pointer shrink-0 shadow-md shadow-indigo-100"
+              className="bg-accent-blue hover:bg-blue-900 disabled:opacity-55 duration-150 rounded-xl px-5 py-3 flex items-center justify-center text-white cursor-pointer shrink-0 shadow-md shadow-blue-100"
             >
               <Send className="w-4 h-4" />
             </button>

@@ -1,5 +1,6 @@
 import express from "express";
 import path from "path";
+import fs from "fs";
 import { createServer as createViteServer } from "vite";
 import { GoogleGenAI } from "@google/genai";
 import dotenv from "dotenv";
@@ -11,6 +12,25 @@ const PORT = 3000;
 
 app.use(express.json());
 
+// CORS headers for local development fetching
+app.use((req, res, next) => {
+  res.header("Access-Control-Allow-Origin", "*");
+  res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
+  next();
+});
+
+// Serve 7-day forecast model data
+app.get("/api/forecast/weekly", (req, res) => {
+  try {
+    const forecastPath = "C:/Users/manpr/Desktop/Nerd Stuff/hackathon projects/isro/Model Training Data/forecast_7d.json";
+    const data = fs.readFileSync(forecastPath, "utf8");
+    res.setHeader("Content-Type", "application/json");
+    res.send(data);
+  } catch (err: any) {
+    console.error("Forecast API Error:", err);
+    res.status(500).json({ error: "Failed to read forecast data" });
+  }
+});
 // Initialize GoogleGenAI securely on the server
 const ai = new GoogleGenAI({
   apiKey: process.env.GEMINI_API_KEY || "",

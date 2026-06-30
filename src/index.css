@@ -1,40 +1,41 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Geist:wght@400;600;700;800&family=JetBrains+Mono:wght@500;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@600;700&family=Geist:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap');
 @import "tailwindcss";
+@import "leaflet/dist/leaflet.css";
 
 :root {
-  /* === CLIMATESYNC EXECUTIVE LIGHT TOKENS === */
-  --bg-void:        #f8fafc;   /* Crisp light page canvas background */
-  --bg-deep:        #f1f5f9;   /* Workspace alignment container background */  
-  --bg-surface:     #ffffff;   /* Solid white analytics cards and panels */
-  --bg-elevated:    #e2e8f0;   /* Clean active control backgrounds and hover states */
-  --border-default: #cbd5e1;   /* Solid, clean panel borders */
-  --border-bright:  #94a3b8;   /* Active geospatial bounding boxes */
-  --border-green:   rgba(21,128,61,0.2);
+  /* === CLIMATESYNC EXECUTIVE LIGHT GLASS TOKENS === */
+  --bg-void:        rgba(248, 250, 252, 0.35);   /* Translucent light page canvas */
+  --bg-deep:        rgba(241, 245, 249, 0.45);   /* Translucent deeper background */  
+  --bg-surface:     rgba(255, 255, 255, 0.42);   /* Frosty translucent white glass */
+  --bg-elevated:    rgba(226, 232, 240, 0.55);   /* Clean active control glass states */
+  --border-default: rgba(255, 255, 255, 0.45);   /* Glass edge border */
+  --border-bright:  rgba(255, 255, 255, 0.7);    /* Active geospatial highlight edge */
+  --border-green:   rgba(21, 128, 61, 0.3);
 
-  --accent-blue:    #1e3a8a;   /* Institutional Navy Blue - commands presentation authority */
-  --accent-cyan:    #0369a1;   /* Slate Ocean Blue - primary data tracks */
-  --accent-green:   #15803d;   /* Emerald Green - secure validation feeds */
-  --accent-orange:  #b45309;   /* Non-vibrant Amber Warning threshold */
-  --accent-red:     #b91c1c;   /* Crimson Crisis Alert marker */
-  --accent-purple:  #6d28d9;   /* Deep Royal Purple - analytical indices */
+  --accent-blue:    #1e3a8a;   /* Institutional Navy Blue */
+  --accent-cyan:    #0369a1;   /* Slate Ocean Blue */
+  --accent-green:   #15803d;   /* Emerald Green */
+  --accent-orange:  #b45309;   /* Non-vibrant Amber Warning */
+  --accent-red:     #b91c1c;   /* Crimson Crisis Alert */
+  --accent-purple:  #6d28d9;   /* Deep Royal Purple */
 
   /* Enforce deeply legible text matrices */
   --text-primary:   #0f172a;   /* High-contrast slate charcoal */
   --text-secondary: #334155;   /* Deep charcoal gray */
   --text-muted:     #475569;   /* Grounded gray for metric labels */
-  --map-bg:         #e2e8f0;
-  --card-shadow:    0 4px 18px rgba(15, 23, 42, 0.04);
+  --map-bg:         rgba(226, 232, 240, 0.35);
+  --card-shadow:    0 8px 32px 0 rgba(15, 23, 42, 0.06);
 
   /* Calibrated light-mode climate ranges */
-  --temp-cold:   #e0f2fe;
-  --temp-cool:   #7dd3fc;
+  --temp-cold:   rgba(224, 242, 254, 0.8);
+  --temp-cool:   rgba(125, 211, 252, 0.8);
   --temp-warm:   #f59e0b;
   --temp-hot:    #dc2626;
 
-  --rain-none:   #f8fafc;
-  --rain-low:    #bae6fd;
-  --rain-mid:    #38bdf8;
-  --rain-high:   #0284c7;
+  --rain-none:   rgba(248, 250, 252, 0.8);
+  --rain-low:    rgba(186, 230, 253, 0.8);
+  --rain-mid:    rgba(56, 189, 248, 0.8);
+  --rain-high:   rgba(2, 132, 199, 0.8);
 
   --drought-ok:  #16a34a;
   --drought-mid: #ca8a04;
@@ -44,6 +45,7 @@
 @theme {
   --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
   --font-display: "Geist", "Inter", sans-serif;
+  --font-brand: "Space Grotesk", sans-serif;
   --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
 
   --color-bg-void: var(--bg-void);
@@ -68,45 +70,92 @@
 }
 
 body {
-  background: var(--bg-void);
+  min-height: 100vh;
+  background-color: #f1f5f9;
+  background-image: 
+    radial-gradient(at 15% 15%, rgba(59, 130, 246, 0.12) 0px, transparent 45%),
+    radial-gradient(at 85% 15%, rgba(99, 102, 241, 0.12) 0px, transparent 45%),
+    radial-gradient(at 80% 85%, rgba(16, 185, 129, 0.1) 0px, transparent 45%),
+    radial-gradient(at 20% 80%, rgba(217, 70, 239, 0.08) 0px, transparent 45%);
+  background-attachment: fixed;
+  background-size: 100% 100%;
   color: var(--text-primary);
+  position: relative;
+}
+
+/* Geocentric dot grid matrix background overlay */
+body::before {
+  content: "";
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-image: radial-gradient(rgba(148, 163, 184, 0.1) 1.2px, transparent 1.2px);
+  background-size: 24px 24px;
+  pointer-events: none;
+  z-index: -1;
 }
 
 .map-container {
   background: var(--map-bg);
 }
 
-/* Structural Layout Enforcement */
+/* Structural Layout Enforcement - Sitewide Glassmorphic Panels */
 .kpi-card, .panel-card, .sidebar-card, .surface-analysis-card,
-.radar-card, .whatif-card, .forecast-panel, .metric-card, .district-detail-panel {
-  background: var(--bg-surface) !important;
-  border: 1px solid var(--border-default) !important;
-  box-shadow: var(--card-shadow) !important;
+.radar-card, .whatif-card, .forecast-panel, .metric-card, .district-detail-panel,
+.bg-bg-surface {
+  backdrop-filter: blur(14px) saturate(130%) !important;
+  -webkit-backdrop-filter: blur(14px) saturate(130%) !important;
+  background: rgba(255, 255, 255, 0.42) !important;
+  border: 1px solid rgba(255, 255, 255, 0.48) !important;
+  box-shadow: 0 8px 32px 0 rgba(15, 23, 42, 0.05), inset 0 0 0 1px rgba(255, 255, 255, 0.2) !important;
   color: var(--text-primary) !important;
+  border-radius: 12px;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+}
+
+.bg-bg-void {
+  background: transparent !important;
+}
+
+.bg-bg-deep {
+  background: transparent !important;
+}
+
+/* Hover scales for active dynamic elements */
+.kpi-card:hover, .panel-card:hover, .surface-analysis-card:hover, .metric-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 40px 0 rgba(15, 23, 42, 0.08), inset 0 0 0 1px rgba(255, 255, 255, 0.35) !important;
+  border-color: rgba(255, 255, 255, 0.65) !important;
 }
 
 nav, .navbar, header {
-  background: var(--bg-surface) !important;
-  border-bottom: 1px solid var(--border-default) !important;
+  background: rgba(255, 255, 255, 0.6) !important;
+  backdrop-filter: blur(16px) saturate(125%) !important;
+  -webkit-backdrop-filter: blur(16px) saturate(125%) !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.35) !important;
 }
 
 @layer utilities {
   /* Sleek Interface Glass Card Theme */
   .glass-ui {
-    backdrop-filter: blur(16px);
-    background: rgba(255, 255, 255, 0.85);
-    border: 1px solid rgba(226, 232, 240, 0.9);
+    backdrop-filter: blur(16px) saturate(130%) !important;
+    -webkit-backdrop-filter: blur(16px) saturate(130%) !important;
+    background: rgba(255, 255, 255, 0.45) !important;
+    border: 1px solid rgba(255, 255, 255, 0.45) !important;
     border-radius: 1rem;
-    box-shadow: 0 10px 25px -5px rgba(15, 23, 42, 0.08), 0 8px 10px -6px rgba(15, 23, 42, 0.08);
+    box-shadow: 0 10px 30px -5px rgba(15, 23, 42, 0.06), inset 0 0 0 1px rgba(255, 255, 255, 0.2) !important;
   }
   
   .glass-ui-interactive {
-    backdrop-filter: blur(16px);
-    background: rgba(255, 255, 255, 0.95);
-    border: 1px solid rgba(79, 70, 229, 0.3);
-    box-shadow: 0 12px 30px -5px rgba(79, 70, 229, 0.12);
+    backdrop-filter: blur(16px) saturate(130%) !important;
+    -webkit-backdrop-filter: blur(16px) saturate(130%) !important;
+    background: rgba(255, 255, 255, 0.55) !important;
+    border: 1px solid rgba(79, 70, 229, 0.25) !important;
+    box-shadow: 0 12px 30px -5px rgba(79, 70, 229, 0.1), inset 0 0 0 1px rgba(255, 255, 255, 0.25) !important;
   }
-
+}
   /* Heatmap Dynamic Accents (Ventusky Meteorological Style) */
   .gradient-temp {
     background: radial-gradient(circle at 35% 25%, rgba(220, 38, 38, 0.8) 0%, rgba(245, 158, 11, 0.6) 32%, rgba(16, 185, 129, 0.4) 58%, rgba(59, 130, 246, 0.55) 80%, rgba(30, 58, 138, 0.75) 100%);
@@ -123,8 +172,6 @@ nav, .navbar, header {
   .gradient-pressure {
     background: radial-gradient(circle at 34% 40%, rgba(147, 51, 234, 0.85) 0%, rgba(236, 72, 153, 0.6) 42%, rgba(253, 224, 71, 0.35) 75%, rgba(15, 23, 42, 0.9) 100%);
   }
-}
-
 .vertical-text {
   writing-mode: vertical-rl;
   text-orientation: mixed;
@@ -198,7 +245,7 @@ input[type="range"]::-webkit-slider-thumb:hover {
 .nav-badge.confidence { color: var(--accent-cyan); border-color: rgba(6,182,212,0.3); }
 
 .map-tooltip {
-  position: fixed;
+  position: absolute;
   background: var(--bg-surface);
   border: 1px solid var(--border-bright);
   border-radius: 12px;
@@ -209,8 +256,7 @@ input[type="range"]::-webkit-slider-thumb:hover {
   z-index: 9999;
   backdrop-filter: blur(12px);
   box-shadow: 0 8px 32px rgba(0,0,0,0.4);
-  /* NO transition on left/top — instant cursor follow */
-  transition: opacity 0.1s ease;
+  transition: opacity 0.2s ease;
 }
 .tt-header {
   display: flex;
@@ -325,19 +371,21 @@ input[type="range"]::-webkit-slider-thumb:hover {
   flex: 1;
   transition: flex 0.4s cubic-bezier(0.4,0,0.2,1);
   height: 100%;
-  background: var(--map-bg) !important;
+  background: rgba(226, 232, 240, 0.22) !important;
+  backdrop-filter: blur(8px) saturate(110%);
+  -webkit-backdrop-filter: blur(8px) saturate(110%);
 }
 
 .map-area.split-view .map-svg-container {
-  flex: 0 0 45%;
-  max-width: 45%;
+  flex: 0 0 50%;
+  max-width: 50%;
 }
 
 .district-detail-panel {
-  flex: 0 0 55%;
-  max-width: 55%;
+  flex: 0 0 50%;
+  max-width: 50%;
   background: var(--bg-surface);
-  border-left: 1px solid var(--border-default);
+  border-left: none; /* removed vertical line artifact */
   overflow-y: auto;
   animation: slideInRight 0.35s cubic-bezier(0.4,0,0.2,1);
   z-index: 50;
@@ -477,3 +525,39 @@ input[type="range"]::-webkit-slider-thumb:hover {
   color: var(--text-primary) !important;
   box-shadow: 0 4px 12px rgba(15, 23, 42, 0.08);
 }
+
+path.district-selected {
+  stroke: #ffffff !important;
+  stroke-width: 3px !important;
+  filter: drop-shadow(0 0 6px rgba(255,255,255,0.8)) 
+          drop-shadow(0 0 12px rgba(255,255,255,0.4));
+  animation: borderGlow 2s ease-in-out infinite alternate;
+}
+
+@keyframes borderGlow {
+  from { filter: drop-shadow(0 0 4px rgba(255,255,255,0.6)); }
+  to   { filter: drop-shadow(0 0 12px rgba(255,255,255,1)); }
+}
+
+.chip-glass {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 0.75rem;
+  padding: 0.25rem 0.75rem;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
+  white-space: nowrap;
+}
+
+.chip-glass:hover {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.2);
+  transform: translateY(-1px);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
+}
+
