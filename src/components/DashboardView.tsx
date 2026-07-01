@@ -138,6 +138,7 @@ export default function DashboardView({
   // Sidebar toggle
   const [isLeftPanelOpen, setIsLeftPanelOpen] = useState(true);
   const [isRightPanelOpen, setIsRightPanelOpen] = useState(true);
+
   const [showSurfaceAnalysis, setShowSurfaceAnalysis] = useState(true);
 
   // Flash Prediction
@@ -197,7 +198,10 @@ export default function DashboardView({
       setFlashSuggestions([]);
     } else {
       setFlashSuggestions(
-        flashDistricts.filter(d => d.toLowerCase().includes(val.toLowerCase())).slice(0, 6)
+        [...flashDistricts]
+          .sort((a, b) => a.localeCompare(b))
+          .filter(d => d.toLowerCase().includes(val.toLowerCase()))
+          .slice(0, 6)
       );
     }
   };
@@ -454,7 +458,7 @@ export default function DashboardView({
                               : "bg-accent-blue hover:bg-blue-700 text-white cursor-pointer"
                             }`}
                         >
-                          {isRecalculating ? "RUNNING..." : "Recalculate"}
+                          {isRecalculating ? "RUNNING..." : "CALCULATE"}
                         </button>
                         <button
                           onClick={handleReset}

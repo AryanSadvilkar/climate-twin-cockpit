@@ -120,7 +120,7 @@ interface MapViewProps {
 }
 
 // Dynamic Legend component styled with glassmorphism
-const Legend = ({ activeLayerId, isLeftPanelOpen = true, dynamicTempRange }: { activeLayerId: WeatherLayer; isLeftPanelOpen?: boolean, dynamicTempRange?: {min: number, max: number} | null }) => {
+const Legend = ({ activeLayerId, isRightPanelOpen = true, isDistrictCardOpen = false, dynamicTempRange }: { activeLayerId: WeatherLayer; isRightPanelOpen?: boolean, isDistrictCardOpen?: boolean, dynamicTempRange?: {min: number, max: number} | null }) => {
   const config = useMemo(() => {
     switch (activeLayerId) {
       case "temp":
@@ -186,8 +186,8 @@ const Legend = ({ activeLayerId, isLeftPanelOpen = true, dynamicTempRange }: { a
     <div 
       className="absolute z-[1000] panel-card bg-bg-surface border border-border-default p-3 rounded-xl shadow-lg w-52 font-mono text-[9px] select-none flex flex-col gap-2 pointer-events-auto transition-all duration-300 ease-in-out"
       style={{
-        bottom: '150px',
-        left: isLeftPanelOpen ? '290px' : '20px'
+        top: '20px',
+        right: isDistrictCardOpen ? 'calc(50% + 20px)' : (isRightPanelOpen ? '290px' : '20px')
       }}
     >
       <div className="font-sans font-bold text-text-primary uppercase tracking-wider">{config.title}</div>
@@ -1193,25 +1193,8 @@ const MapViewComponent = forwardRef<any, MapViewProps>((
           </div>
         )}
 
-        {/* ZONE pill — top-right */}
+        {/* AI Prediction pill — top-right */}
         <div className="absolute top-4 right-4 z-[1000] pointer-events-none flex flex-col gap-2 items-end">
-          <div
-            style={{
-              background: 'rgba(255,255,255,0.88)',
-              border: '1px solid rgba(0,0,0,0.12)',
-              backdropFilter: 'blur(8px)',
-              borderRadius: '10px',
-              padding: '5px 12px',
-              fontFamily: 'monospace',
-              fontSize: '10px',
-              fontWeight: 800,
-              letterSpacing: '0.08em',
-              color: '#1e293b',
-              textTransform: 'uppercase',
-            }}
-          >
-            ZONE: <span style={{ color: '#0369a1' }}>{selectedState ?? 'ALL INDIA SUB-GRID'}</span>
-          </div>
           {activeTimeIndex > 0 && (
             <div className="bg-accent-purple text-white border border-accent-purple/20 px-3 py-1.5 rounded-xl text-[8.5px] font-mono font-extrabold uppercase flex items-center gap-1.5 animate-pulse shadow-lg">
               <span className="w-1.5 h-1.5 rounded-full bg-white animate-ping" />
@@ -1259,7 +1242,7 @@ const MapViewComponent = forwardRef<any, MapViewProps>((
         </button>
 
         {/* Dynamic Legend */}
-        <Legend activeLayerId={activeLayerId} isLeftPanelOpen={isLeftPanelOpen} dynamicTempRange={dynamicTempRange} />
+        <Legend activeLayerId={activeLayerId} isRightPanelOpen={isRightPanelOpen} isDistrictCardOpen={level === 'district' && !!selectedDistrict} dynamicTempRange={dynamicTempRange} />
 
         {/* Cursor-following React tooltip */}
         {hoveredRegion && (
