@@ -1,0 +1,2594 @@
+{
+    "Ahmednagar": [
+        {
+            "day": 1,
+            "T2M": 26.02,
+            "T2M_MAX": 31.25,
+            "T2M_MIN": 23.46,
+            "RH2M": 79.65,
+            "PRECTOTCORR": 8.98,
+            "PS": 933.32,
+            "ALLSKY_SFC_SW_DWN": 17.35
+        },
+        {
+            "day": 2,
+            "T2M": 25.69,
+            "T2M_MAX": 30.17,
+            "T2M_MIN": 23.07,
+            "RH2M": 79.15,
+            "PRECTOTCORR": 8.34,
+            "PS": 933.12,
+            "ALLSKY_SFC_SW_DWN": 16.31
+        },
+        {
+            "day": 3,
+            "T2M": 25.27,
+            "T2M_MAX": 29.69,
+            "T2M_MIN": 22.86,
+            "RH2M": 80.04,
+            "PRECTOTCORR": 7.55,
+            "PS": 933.11,
+            "ALLSKY_SFC_SW_DWN": 15.45
+        },
+        {
+            "day": 4,
+            "T2M": 25.02,
+            "T2M_MAX": 29.24,
+            "T2M_MIN": 22.79,
+            "RH2M": 81.2,
+            "PRECTOTCORR": 9.25,
+            "PS": 932.8,
+            "ALLSKY_SFC_SW_DWN": 14.66
+        },
+        {
+            "day": 5,
+            "T2M": 24.87,
+            "T2M_MAX": 28.61,
+            "T2M_MIN": 22.69,
+            "RH2M": 82.08,
+            "PRECTOTCORR": 8.8,
+            "PS": 932.15,
+            "ALLSKY_SFC_SW_DWN": 15.17
+        },
+        {
+            "day": 6,
+            "T2M": 24.68,
+            "T2M_MAX": 28.02,
+            "T2M_MIN": 22.62,
+            "RH2M": 81.47,
+            "PRECTOTCORR": 8.82,
+            "PS": 931.93,
+            "ALLSKY_SFC_SW_DWN": 14.42
+        },
+        {
+            "day": 7,
+            "T2M": 24.51,
+            "T2M_MAX": 27.63,
+            "T2M_MIN": 22.66,
+            "RH2M": 81.66,
+            "PRECTOTCORR": 8.0,
+            "PS": 932.11,
+            "ALLSKY_SFC_SW_DWN": 13.57
+        }
+    ],
+    "Akola": [
+        {
+            "day": 1,
+            "T2M": 28.66,
+            "T2M_MAX": 32.7,
+            "T2M_MIN": 25.72,
+            "RH2M": 75.77,
+            "PRECTOTCORR": 7.62,
+            "PS": 970.62,
+            "ALLSKY_SFC_SW_DWN": 18.18
+        },
+        {
+            "day": 2,
+            "T2M": 27.79,
+            "T2M_MAX": 32.05,
+            "T2M_MIN": 25.42,
+            "RH2M": 77.01,
+            "PRECTOTCORR": 9.56,
+            "PS": 970.61,
+            "ALLSKY_SFC_SW_DWN": 16.72
+        },
+        {
+            "day": 3,
+            "T2M": 27.38,
+            "T2M_MAX": 31.65,
+            "T2M_MIN": 24.96,
+            "RH2M": 78.46,
+            "PRECTOTCORR": 10.41,
+            "PS": 970.39,
+            "ALLSKY_SFC_SW_DWN": 16.31
+        },
+        {
+            "day": 4,
+            "T2M": 27.24,
+            "T2M_MAX": 31.0,
+            "T2M_MIN": 24.74,
+            "RH2M": 79.77,
+            "PRECTOTCORR": 12.52,
+            "PS": 970.06,
+            "ALLSKY_SFC_SW_DWN": 15.17
+        },
+        {
+            "day": 5,
+            "T2M": 26.9,
+            "T2M_MAX": 30.38,
+            "T2M_MIN": 24.75,
+            "RH2M": 80.6,
+            "PRECTOTCORR": 14.41,
+            "PS": 969.95,
+            "ALLSKY_SFC_SW_DWN": 14.51
+        },
+        {
+            "day": 6,
+            "T2M": 26.87,
+            "T2M_MAX": 29.38,
+            "T2M_MIN": 24.64,
+            "RH2M": 81.3,
+            "PRECTOTCORR": 13.04,
+            "PS": 970.02,
+            "ALLSKY_SFC_SW_DWN": 13.73
+        },
+        {
+            "day": 7,
+            "T2M": 27.06,
+            "T2M_MAX": 30.36,
+            "T2M_MIN": 24.64,
+            "RH2M": 81.72,
+            "PRECTOTCORR": 12.39,
+            "PS": 970.27,
+            "ALLSKY_SFC_SW_DWN": 14.46
+        }
+    ],
+    "Amravati": [
+        {
+            "day": 1,
+            "T2M": 27.91,
+            "T2M_MAX": 32.03,
+            "T2M_MIN": 25.21,
+            "RH2M": 77.64,
+            "PRECTOTCORR": 9.41,
+            "PS": 962.94,
+            "ALLSKY_SFC_SW_DWN": 18.09
+        },
+        {
+            "day": 2,
+            "T2M": 27.38,
+            "T2M_MAX": 31.08,
+            "T2M_MIN": 24.83,
+            "RH2M": 79.45,
+            "PRECTOTCORR": 10.62,
+            "PS": 962.93,
+            "ALLSKY_SFC_SW_DWN": 17.4
+        },
+        {
+            "day": 3,
+            "T2M": 27.06,
+            "T2M_MAX": 30.74,
+            "T2M_MIN": 24.63,
+            "RH2M": 80.66,
+            "PRECTOTCORR": 11.97,
+            "PS": 962.84,
+            "ALLSKY_SFC_SW_DWN": 16.29
+        },
+        {
+            "day": 4,
+            "T2M": 26.73,
+            "T2M_MAX": 30.47,
+            "T2M_MIN": 24.47,
+            "RH2M": 80.5,
+            "PRECTOTCORR": 12.94,
+            "PS": 962.64,
+            "ALLSKY_SFC_SW_DWN": 14.72
+        },
+        {
+            "day": 5,
+            "T2M": 26.59,
+            "T2M_MAX": 29.79,
+            "T2M_MIN": 24.38,
+            "RH2M": 81.03,
+            "PRECTOTCORR": 16.99,
+            "PS": 962.19,
+            "ALLSKY_SFC_SW_DWN": 14.02
+        },
+        {
+            "day": 6,
+            "T2M": 26.56,
+            "T2M_MAX": 29.68,
+            "T2M_MIN": 24.2,
+            "RH2M": 81.6,
+            "PRECTOTCORR": 15.17,
+            "PS": 961.89,
+            "ALLSKY_SFC_SW_DWN": 14.0
+        },
+        {
+            "day": 7,
+            "T2M": 26.74,
+            "T2M_MAX": 29.99,
+            "T2M_MIN": 24.27,
+            "RH2M": 80.51,
+            "PRECTOTCORR": 13.68,
+            "PS": 961.56,
+            "ALLSKY_SFC_SW_DWN": 14.93
+        }
+    ],
+    "Aurangabad": [
+        {
+            "day": 1,
+            "T2M": 26.45,
+            "T2M_MAX": 30.66,
+            "T2M_MIN": 23.21,
+            "RH2M": 77.63,
+            "PRECTOTCORR": 5.44,
+            "PS": 940.17,
+            "ALLSKY_SFC_SW_DWN": 17.13
+        },
+        {
+            "day": 2,
+            "T2M": 26.01,
+            "T2M_MAX": 29.98,
+            "T2M_MIN": 23.19,
+            "RH2M": 78.05,
+            "PRECTOTCORR": 6.84,
+            "PS": 940.02,
+            "ALLSKY_SFC_SW_DWN": 17.41
+        },
+        {
+            "day": 3,
+            "T2M": 25.81,
+            "T2M_MAX": 29.31,
+            "T2M_MIN": 23.09,
+            "RH2M": 79.38,
+            "PRECTOTCORR": 7.29,
+            "PS": 939.79,
+            "ALLSKY_SFC_SW_DWN": 16.8
+        },
+        {
+            "day": 4,
+            "T2M": 25.44,
+            "T2M_MAX": 29.02,
+            "T2M_MIN": 23.02,
+            "RH2M": 80.12,
+            "PRECTOTCORR": 8.79,
+            "PS": 939.45,
+            "ALLSKY_SFC_SW_DWN": 15.48
+        },
+        {
+            "day": 5,
+            "T2M": 25.27,
+            "T2M_MAX": 28.86,
+            "T2M_MIN": 22.98,
+            "RH2M": 81.1,
+            "PRECTOTCORR": 8.44,
+            "PS": 938.94,
+            "ALLSKY_SFC_SW_DWN": 14.85
+        },
+        {
+            "day": 6,
+            "T2M": 25.18,
+            "T2M_MAX": 28.57,
+            "T2M_MIN": 22.99,
+            "RH2M": 81.96,
+            "PRECTOTCORR": 8.9,
+            "PS": 938.58,
+            "ALLSKY_SFC_SW_DWN": 14.73
+        },
+        {
+            "day": 7,
+            "T2M": 25.07,
+            "T2M_MAX": 28.56,
+            "T2M_MIN": 22.96,
+            "RH2M": 82.0,
+            "PRECTOTCORR": 7.03,
+            "PS": 938.5,
+            "ALLSKY_SFC_SW_DWN": 14.65
+        }
+    ],
+    "Beed": [
+        {
+            "day": 1,
+            "T2M": 28.22,
+            "T2M_MAX": 32.49,
+            "T2M_MIN": 25.08,
+            "RH2M": 70.86,
+            "PRECTOTCORR": 4.36,
+            "PS": 948.72,
+            "ALLSKY_SFC_SW_DWN": 19.68
+        },
+        {
+            "day": 2,
+            "T2M": 27.7,
+            "T2M_MAX": 32.22,
+            "T2M_MIN": 24.69,
+            "RH2M": 71.07,
+            "PRECTOTCORR": 6.61,
+            "PS": 948.72,
+            "ALLSKY_SFC_SW_DWN": 18.56
+        },
+        {
+            "day": 3,
+            "T2M": 27.23,
+            "T2M_MAX": 31.7,
+            "T2M_MIN": 24.51,
+            "RH2M": 72.53,
+            "PRECTOTCORR": 7.38,
+            "PS": 948.55,
+            "ALLSKY_SFC_SW_DWN": 17.42
+        },
+        {
+            "day": 4,
+            "T2M": 26.86,
+            "T2M_MAX": 31.44,
+            "T2M_MIN": 24.2,
+            "RH2M": 73.71,
+            "PRECTOTCORR": 9.34,
+            "PS": 947.97,
+            "ALLSKY_SFC_SW_DWN": 16.67
+        },
+        {
+            "day": 5,
+            "T2M": 26.4,
+            "T2M_MAX": 30.25,
+            "T2M_MIN": 24.02,
+            "RH2M": 75.38,
+            "PRECTOTCORR": 10.02,
+            "PS": 947.61,
+            "ALLSKY_SFC_SW_DWN": 15.72
+        },
+        {
+            "day": 6,
+            "T2M": 26.2,
+            "T2M_MAX": 30.22,
+            "T2M_MIN": 23.87,
+            "RH2M": 76.82,
+            "PRECTOTCORR": 9.08,
+            "PS": 947.38,
+            "ALLSKY_SFC_SW_DWN": 14.77
+        },
+        {
+            "day": 7,
+            "T2M": 26.03,
+            "T2M_MAX": 29.8,
+            "T2M_MIN": 23.7,
+            "RH2M": 76.82,
+            "PRECTOTCORR": 8.99,
+            "PS": 947.06,
+            "ALLSKY_SFC_SW_DWN": 15.02
+        }
+    ],
+    "Bhandara": [
+        {
+            "day": 1,
+            "T2M": 29.37,
+            "T2M_MAX": 34.37,
+            "T2M_MIN": 26.12,
+            "RH2M": 74.05,
+            "PRECTOTCORR": 8.74,
+            "PS": 973.5,
+            "ALLSKY_SFC_SW_DWN": 18.18
+        },
+        {
+            "day": 2,
+            "T2M": 28.73,
+            "T2M_MAX": 32.92,
+            "T2M_MIN": 25.8,
+            "RH2M": 75.67,
+            "PRECTOTCORR": 9.68,
+            "PS": 973.26,
+            "ALLSKY_SFC_SW_DWN": 17.38
+        },
+        {
+            "day": 3,
+            "T2M": 28.2,
+            "T2M_MAX": 32.33,
+            "T2M_MIN": 25.48,
+            "RH2M": 76.74,
+            "PRECTOTCORR": 10.75,
+            "PS": 972.97,
+            "ALLSKY_SFC_SW_DWN": 16.26
+        },
+        {
+            "day": 4,
+            "T2M": 27.86,
+            "T2M_MAX": 31.94,
+            "T2M_MIN": 25.21,
+            "RH2M": 76.82,
+            "PRECTOTCORR": 13.15,
+            "PS": 972.75,
+            "ALLSKY_SFC_SW_DWN": 15.79
+        },
+        {
+            "day": 5,
+            "T2M": 27.65,
+            "T2M_MAX": 31.8,
+            "T2M_MIN": 25.03,
+            "RH2M": 77.31,
+            "PRECTOTCORR": 14.77,
+            "PS": 972.36,
+            "ALLSKY_SFC_SW_DWN": 16.44
+        },
+        {
+            "day": 6,
+            "T2M": 27.58,
+            "T2M_MAX": 31.68,
+            "T2M_MIN": 24.87,
+            "RH2M": 77.92,
+            "PRECTOTCORR": 12.54,
+            "PS": 971.97,
+            "ALLSKY_SFC_SW_DWN": 15.52
+        },
+        {
+            "day": 7,
+            "T2M": 27.47,
+            "T2M_MAX": 31.57,
+            "T2M_MIN": 24.86,
+            "RH2M": 78.96,
+            "PRECTOTCORR": 12.02,
+            "PS": 971.8,
+            "ALLSKY_SFC_SW_DWN": 15.95
+        }
+    ],
+    "Buldhana": [
+        {
+            "day": 1,
+            "T2M": 25.72,
+            "T2M_MAX": 29.7,
+            "T2M_MIN": 23.6,
+            "RH2M": 82.35,
+            "PRECTOTCORR": 8.72,
+            "PS": 933.8,
+            "ALLSKY_SFC_SW_DWN": 17.06
+        },
+        {
+            "day": 2,
+            "T2M": 25.55,
+            "T2M_MAX": 28.96,
+            "T2M_MIN": 23.26,
+            "RH2M": 81.37,
+            "PRECTOTCORR": 8.35,
+            "PS": 933.45,
+            "ALLSKY_SFC_SW_DWN": 16.51
+        },
+        {
+            "day": 3,
+            "T2M": 25.32,
+            "T2M_MAX": 28.39,
+            "T2M_MIN": 23.2,
+            "RH2M": 81.06,
+            "PRECTOTCORR": 12.53,
+            "PS": 933.03,
+            "ALLSKY_SFC_SW_DWN": 14.6
+        },
+        {
+            "day": 4,
+            "T2M": 25.15,
+            "T2M_MAX": 28.15,
+            "T2M_MIN": 23.17,
+            "RH2M": 81.91,
+            "PRECTOTCORR": 15.53,
+            "PS": 932.05,
+            "ALLSKY_SFC_SW_DWN": 13.39
+        },
+        {
+            "day": 5,
+            "T2M": 25.03,
+            "T2M_MAX": 27.98,
+            "T2M_MIN": 23.24,
+            "RH2M": 81.99,
+            "PRECTOTCORR": 11.99,
+            "PS": 931.67,
+            "ALLSKY_SFC_SW_DWN": 13.05
+        },
+        {
+            "day": 6,
+            "T2M": 25.0,
+            "T2M_MAX": 28.3,
+            "T2M_MIN": 23.25,
+            "RH2M": 81.61,
+            "PRECTOTCORR": 11.56,
+            "PS": 931.44,
+            "ALLSKY_SFC_SW_DWN": 12.85
+        },
+        {
+            "day": 7,
+            "T2M": 24.96,
+            "T2M_MAX": 28.1,
+            "T2M_MIN": 23.25,
+            "RH2M": 81.91,
+            "PRECTOTCORR": 9.93,
+            "PS": 931.48,
+            "ALLSKY_SFC_SW_DWN": 12.87
+        }
+    ],
+    "Chandrapur": [
+        {
+            "day": 1,
+            "T2M": 29.8,
+            "T2M_MAX": 34.44,
+            "T2M_MIN": 26.18,
+            "RH2M": 72.54,
+            "PRECTOTCORR": 4.35,
+            "PS": 980.85,
+            "ALLSKY_SFC_SW_DWN": 18.55
+        },
+        {
+            "day": 2,
+            "T2M": 29.35,
+            "T2M_MAX": 33.73,
+            "T2M_MIN": 25.9,
+            "RH2M": 73.77,
+            "PRECTOTCORR": 7.8,
+            "PS": 980.57,
+            "ALLSKY_SFC_SW_DWN": 17.73
+        },
+        {
+            "day": 3,
+            "T2M": 28.77,
+            "T2M_MAX": 32.83,
+            "T2M_MIN": 25.63,
+            "RH2M": 75.47,
+            "PRECTOTCORR": 11.3,
+            "PS": 980.19,
+            "ALLSKY_SFC_SW_DWN": 16.5
+        },
+        {
+            "day": 4,
+            "T2M": 28.05,
+            "T2M_MAX": 31.97,
+            "T2M_MIN": 25.31,
+            "RH2M": 76.5,
+            "PRECTOTCORR": 13.06,
+            "PS": 979.67,
+            "ALLSKY_SFC_SW_DWN": 14.47
+        },
+        {
+            "day": 5,
+            "T2M": 27.61,
+            "T2M_MAX": 31.46,
+            "T2M_MIN": 24.89,
+            "RH2M": 78.45,
+            "PRECTOTCORR": 14.6,
+            "PS": 979.33,
+            "ALLSKY_SFC_SW_DWN": 14.68
+        },
+        {
+            "day": 6,
+            "T2M": 27.5,
+            "T2M_MAX": 31.12,
+            "T2M_MIN": 24.82,
+            "RH2M": 79.21,
+            "PRECTOTCORR": 14.75,
+            "PS": 979.37,
+            "ALLSKY_SFC_SW_DWN": 14.55
+        },
+        {
+            "day": 7,
+            "T2M": 27.32,
+            "T2M_MAX": 30.83,
+            "T2M_MIN": 24.85,
+            "RH2M": 80.0,
+            "PRECTOTCORR": 12.49,
+            "PS": 979.43,
+            "ALLSKY_SFC_SW_DWN": 14.84
+        }
+    ],
+    "Dhule": [
+        {
+            "day": 1,
+            "T2M": 29.55,
+            "T2M_MAX": 35.33,
+            "T2M_MIN": 26.35,
+            "RH2M": 68.5,
+            "PRECTOTCORR": 5.35,
+            "PS": 974.59,
+            "ALLSKY_SFC_SW_DWN": 19.62
+        },
+        {
+            "day": 2,
+            "T2M": 28.8,
+            "T2M_MAX": 34.33,
+            "T2M_MIN": 25.79,
+            "RH2M": 70.25,
+            "PRECTOTCORR": 6.83,
+            "PS": 974.42,
+            "ALLSKY_SFC_SW_DWN": 18.33
+        },
+        {
+            "day": 3,
+            "T2M": 28.4,
+            "T2M_MAX": 32.89,
+            "T2M_MIN": 25.4,
+            "RH2M": 72.39,
+            "PRECTOTCORR": 10.4,
+            "PS": 974.3,
+            "ALLSKY_SFC_SW_DWN": 16.5
+        },
+        {
+            "day": 4,
+            "T2M": 27.86,
+            "T2M_MAX": 32.17,
+            "T2M_MIN": 25.08,
+            "RH2M": 74.29,
+            "PRECTOTCORR": 11.86,
+            "PS": 973.49,
+            "ALLSKY_SFC_SW_DWN": 15.34
+        },
+        {
+            "day": 5,
+            "T2M": 27.63,
+            "T2M_MAX": 31.14,
+            "T2M_MIN": 24.83,
+            "RH2M": 75.34,
+            "PRECTOTCORR": 11.72,
+            "PS": 973.16,
+            "ALLSKY_SFC_SW_DWN": 14.8
+        },
+        {
+            "day": 6,
+            "T2M": 27.56,
+            "T2M_MAX": 31.08,
+            "T2M_MIN": 24.75,
+            "RH2M": 76.53,
+            "PRECTOTCORR": 10.76,
+            "PS": 973.22,
+            "ALLSKY_SFC_SW_DWN": 14.73
+        },
+        {
+            "day": 7,
+            "T2M": 27.58,
+            "T2M_MAX": 30.85,
+            "T2M_MIN": 24.83,
+            "RH2M": 77.09,
+            "PRECTOTCORR": 8.6,
+            "PS": 973.04,
+            "ALLSKY_SFC_SW_DWN": 15.17
+        }
+    ],
+    "Gadchiroli": [
+        {
+            "day": 1,
+            "T2M": 29.61,
+            "T2M_MAX": 33.94,
+            "T2M_MIN": 26.05,
+            "RH2M": 76.85,
+            "PRECTOTCORR": 5.4,
+            "PS": 979.25,
+            "ALLSKY_SFC_SW_DWN": 19.71
+        },
+        {
+            "day": 2,
+            "T2M": 29.17,
+            "T2M_MAX": 33.04,
+            "T2M_MIN": 25.83,
+            "RH2M": 77.34,
+            "PRECTOTCORR": 7.82,
+            "PS": 978.96,
+            "ALLSKY_SFC_SW_DWN": 16.97
+        },
+        {
+            "day": 3,
+            "T2M": 28.75,
+            "T2M_MAX": 32.3,
+            "T2M_MIN": 25.73,
+            "RH2M": 79.36,
+            "PRECTOTCORR": 11.64,
+            "PS": 978.68,
+            "ALLSKY_SFC_SW_DWN": 15.05
+        },
+        {
+            "day": 4,
+            "T2M": 28.09,
+            "T2M_MAX": 31.64,
+            "T2M_MIN": 25.66,
+            "RH2M": 81.19,
+            "PRECTOTCORR": 14.28,
+            "PS": 978.04,
+            "ALLSKY_SFC_SW_DWN": 14.47
+        },
+        {
+            "day": 5,
+            "T2M": 27.79,
+            "T2M_MAX": 31.21,
+            "T2M_MIN": 25.32,
+            "RH2M": 81.82,
+            "PRECTOTCORR": 13.26,
+            "PS": 977.57,
+            "ALLSKY_SFC_SW_DWN": 15.18
+        },
+        {
+            "day": 6,
+            "T2M": 27.69,
+            "T2M_MAX": 30.9,
+            "T2M_MIN": 25.15,
+            "RH2M": 80.88,
+            "PRECTOTCORR": 13.16,
+            "PS": 977.37,
+            "ALLSKY_SFC_SW_DWN": 15.09
+        },
+        {
+            "day": 7,
+            "T2M": 27.5,
+            "T2M_MAX": 30.74,
+            "T2M_MIN": 25.04,
+            "RH2M": 81.27,
+            "PRECTOTCORR": 13.64,
+            "PS": 977.51,
+            "ALLSKY_SFC_SW_DWN": 15.19
+        }
+    ],
+    "Gondia": [
+        {
+            "day": 1,
+            "T2M": 29.52,
+            "T2M_MAX": 34.58,
+            "T2M_MIN": 25.88,
+            "RH2M": 72.98,
+            "PRECTOTCORR": 5.45,
+            "PS": 967.54,
+            "ALLSKY_SFC_SW_DWN": 19.32
+        },
+        {
+            "day": 2,
+            "T2M": 28.95,
+            "T2M_MAX": 33.41,
+            "T2M_MIN": 25.69,
+            "RH2M": 73.76,
+            "PRECTOTCORR": 8.26,
+            "PS": 967.32,
+            "ALLSKY_SFC_SW_DWN": 18.0
+        },
+        {
+            "day": 3,
+            "T2M": 28.57,
+            "T2M_MAX": 32.66,
+            "T2M_MIN": 25.37,
+            "RH2M": 75.19,
+            "PRECTOTCORR": 10.33,
+            "PS": 967.07,
+            "ALLSKY_SFC_SW_DWN": 16.89
+        },
+        {
+            "day": 4,
+            "T2M": 28.04,
+            "T2M_MAX": 31.92,
+            "T2M_MIN": 25.19,
+            "RH2M": 76.0,
+            "PRECTOTCORR": 10.53,
+            "PS": 966.79,
+            "ALLSKY_SFC_SW_DWN": 16.31
+        },
+        {
+            "day": 5,
+            "T2M": 27.65,
+            "T2M_MAX": 31.49,
+            "T2M_MIN": 24.88,
+            "RH2M": 76.47,
+            "PRECTOTCORR": 11.31,
+            "PS": 966.41,
+            "ALLSKY_SFC_SW_DWN": 15.23
+        },
+        {
+            "day": 6,
+            "T2M": 27.52,
+            "T2M_MAX": 31.36,
+            "T2M_MIN": 24.77,
+            "RH2M": 77.39,
+            "PRECTOTCORR": 9.65,
+            "PS": 966.06,
+            "ALLSKY_SFC_SW_DWN": 15.91
+        },
+        {
+            "day": 7,
+            "T2M": 27.55,
+            "T2M_MAX": 30.87,
+            "T2M_MIN": 24.87,
+            "RH2M": 77.95,
+            "PRECTOTCORR": 9.61,
+            "PS": 966.11,
+            "ALLSKY_SFC_SW_DWN": 15.62
+        }
+    ],
+    "Hingoli": [
+        {
+            "day": 1,
+            "T2M": 26.69,
+            "T2M_MAX": 29.87,
+            "T2M_MIN": 24.0,
+            "RH2M": 81.57,
+            "PRECTOTCORR": 16.58,
+            "PS": 953.65,
+            "ALLSKY_SFC_SW_DWN": 17.05
+        },
+        {
+            "day": 2,
+            "T2M": 26.47,
+            "T2M_MAX": 29.41,
+            "T2M_MIN": 23.86,
+            "RH2M": 79.71,
+            "PRECTOTCORR": 11.06,
+            "PS": 953.65,
+            "ALLSKY_SFC_SW_DWN": 16.93
+        },
+        {
+            "day": 3,
+            "T2M": 26.22,
+            "T2M_MAX": 29.78,
+            "T2M_MIN": 23.88,
+            "RH2M": 79.85,
+            "PRECTOTCORR": 10.26,
+            "PS": 953.62,
+            "ALLSKY_SFC_SW_DWN": 16.1
+        },
+        {
+            "day": 4,
+            "T2M": 26.25,
+            "T2M_MAX": 29.62,
+            "T2M_MIN": 23.91,
+            "RH2M": 80.27,
+            "PRECTOTCORR": 11.57,
+            "PS": 953.39,
+            "ALLSKY_SFC_SW_DWN": 14.92
+        },
+        {
+            "day": 5,
+            "T2M": 26.39,
+            "T2M_MAX": 29.33,
+            "T2M_MIN": 24.0,
+            "RH2M": 81.09,
+            "PRECTOTCORR": 10.07,
+            "PS": 952.89,
+            "ALLSKY_SFC_SW_DWN": 14.71
+        },
+        {
+            "day": 6,
+            "T2M": 26.21,
+            "T2M_MAX": 29.29,
+            "T2M_MIN": 24.03,
+            "RH2M": 81.76,
+            "PRECTOTCORR": 9.97,
+            "PS": 952.57,
+            "ALLSKY_SFC_SW_DWN": 13.88
+        },
+        {
+            "day": 7,
+            "T2M": 26.09,
+            "T2M_MAX": 29.1,
+            "T2M_MIN": 24.05,
+            "RH2M": 81.37,
+            "PRECTOTCORR": 11.36,
+            "PS": 952.57,
+            "ALLSKY_SFC_SW_DWN": 13.53
+        }
+    ],
+    "Jalgaon": [
+        {
+            "day": 1,
+            "T2M": 27.77,
+            "T2M_MAX": 32.4,
+            "T2M_MIN": 25.54,
+            "RH2M": 79.07,
+            "PRECTOTCORR": 10.01,
+            "PS": 978.17,
+            "ALLSKY_SFC_SW_DWN": 17.87
+        },
+        {
+            "day": 2,
+            "T2M": 27.44,
+            "T2M_MAX": 31.91,
+            "T2M_MIN": 25.12,
+            "RH2M": 80.4,
+            "PRECTOTCORR": 10.8,
+            "PS": 978.07,
+            "ALLSKY_SFC_SW_DWN": 16.78
+        },
+        {
+            "day": 3,
+            "T2M": 27.31,
+            "T2M_MAX": 31.67,
+            "T2M_MIN": 25.0,
+            "RH2M": 79.66,
+            "PRECTOTCORR": 11.86,
+            "PS": 977.71,
+            "ALLSKY_SFC_SW_DWN": 15.97
+        },
+        {
+            "day": 4,
+            "T2M": 27.19,
+            "T2M_MAX": 31.48,
+            "T2M_MIN": 24.84,
+            "RH2M": 80.84,
+            "PRECTOTCORR": 13.2,
+            "PS": 977.48,
+            "ALLSKY_SFC_SW_DWN": 14.51
+        },
+        {
+            "day": 5,
+            "T2M": 26.91,
+            "T2M_MAX": 30.12,
+            "T2M_MIN": 24.61,
+            "RH2M": 80.92,
+            "PRECTOTCORR": 12.19,
+            "PS": 977.14,
+            "ALLSKY_SFC_SW_DWN": 13.62
+        },
+        {
+            "day": 6,
+            "T2M": 26.94,
+            "T2M_MAX": 30.55,
+            "T2M_MIN": 24.57,
+            "RH2M": 80.43,
+            "PRECTOTCORR": 12.51,
+            "PS": 977.23,
+            "ALLSKY_SFC_SW_DWN": 13.05
+        },
+        {
+            "day": 7,
+            "T2M": 26.99,
+            "T2M_MAX": 30.57,
+            "T2M_MIN": 24.59,
+            "RH2M": 81.03,
+            "PRECTOTCORR": 11.02,
+            "PS": 977.58,
+            "ALLSKY_SFC_SW_DWN": 13.68
+        }
+    ],
+    "Jalna": [
+        {
+            "day": 1,
+            "T2M": 26.08,
+            "T2M_MAX": 29.94,
+            "T2M_MIN": 23.59,
+            "RH2M": 82.53,
+            "PRECTOTCORR": 18.8,
+            "PS": 949.42,
+            "ALLSKY_SFC_SW_DWN": 14.51
+        },
+        {
+            "day": 2,
+            "T2M": 26.08,
+            "T2M_MAX": 29.53,
+            "T2M_MIN": 23.44,
+            "RH2M": 80.92,
+            "PRECTOTCORR": 11.26,
+            "PS": 949.23,
+            "ALLSKY_SFC_SW_DWN": 13.5
+        },
+        {
+            "day": 3,
+            "T2M": 26.21,
+            "T2M_MAX": 30.09,
+            "T2M_MIN": 23.6,
+            "RH2M": 79.58,
+            "PRECTOTCORR": 10.92,
+            "PS": 949.09,
+            "ALLSKY_SFC_SW_DWN": 14.67
+        },
+        {
+            "day": 4,
+            "T2M": 26.24,
+            "T2M_MAX": 30.01,
+            "T2M_MIN": 23.68,
+            "RH2M": 79.25,
+            "PRECTOTCORR": 11.28,
+            "PS": 948.47,
+            "ALLSKY_SFC_SW_DWN": 14.43
+        },
+        {
+            "day": 5,
+            "T2M": 26.15,
+            "T2M_MAX": 29.51,
+            "T2M_MIN": 23.69,
+            "RH2M": 80.3,
+            "PRECTOTCORR": 10.53,
+            "PS": 948.15,
+            "ALLSKY_SFC_SW_DWN": 14.45
+        },
+        {
+            "day": 6,
+            "T2M": 25.9,
+            "T2M_MAX": 29.72,
+            "T2M_MIN": 23.59,
+            "RH2M": 81.0,
+            "PRECTOTCORR": 9.16,
+            "PS": 947.9,
+            "ALLSKY_SFC_SW_DWN": 14.07
+        },
+        {
+            "day": 7,
+            "T2M": 25.72,
+            "T2M_MAX": 29.35,
+            "T2M_MIN": 23.47,
+            "RH2M": 80.65,
+            "PRECTOTCORR": 8.84,
+            "PS": 947.72,
+            "ALLSKY_SFC_SW_DWN": 14.19
+        }
+    ],
+    "Kolhapur": [
+        {
+            "day": 1,
+            "T2M": 24.9,
+            "T2M_MAX": 29.39,
+            "T2M_MIN": 22.87,
+            "RH2M": 85.18,
+            "PRECTOTCORR": 8.7,
+            "PS": 944.63,
+            "ALLSKY_SFC_SW_DWN": 15.55
+        },
+        {
+            "day": 2,
+            "T2M": 24.69,
+            "T2M_MAX": 28.79,
+            "T2M_MIN": 22.8,
+            "RH2M": 86.09,
+            "PRECTOTCORR": 9.97,
+            "PS": 944.52,
+            "ALLSKY_SFC_SW_DWN": 14.19
+        },
+        {
+            "day": 3,
+            "T2M": 24.46,
+            "T2M_MAX": 28.09,
+            "T2M_MIN": 22.59,
+            "RH2M": 86.15,
+            "PRECTOTCORR": 11.5,
+            "PS": 944.62,
+            "ALLSKY_SFC_SW_DWN": 13.53
+        },
+        {
+            "day": 4,
+            "T2M": 24.37,
+            "T2M_MAX": 27.88,
+            "T2M_MIN": 22.43,
+            "RH2M": 85.76,
+            "PRECTOTCORR": 9.53,
+            "PS": 944.88,
+            "ALLSKY_SFC_SW_DWN": 13.73
+        },
+        {
+            "day": 5,
+            "T2M": 24.27,
+            "T2M_MAX": 27.6,
+            "T2M_MIN": 22.34,
+            "RH2M": 85.18,
+            "PRECTOTCORR": 10.37,
+            "PS": 945.13,
+            "ALLSKY_SFC_SW_DWN": 13.99
+        },
+        {
+            "day": 6,
+            "T2M": 24.12,
+            "T2M_MAX": 27.35,
+            "T2M_MIN": 22.25,
+            "RH2M": 85.92,
+            "PRECTOTCORR": 9.99,
+            "PS": 945.07,
+            "ALLSKY_SFC_SW_DWN": 13.8
+        },
+        {
+            "day": 7,
+            "T2M": 23.89,
+            "T2M_MAX": 26.96,
+            "T2M_MIN": 22.23,
+            "RH2M": 86.36,
+            "PRECTOTCORR": 10.75,
+            "PS": 944.75,
+            "ALLSKY_SFC_SW_DWN": 13.29
+        }
+    ],
+    "Latur": [
+        {
+            "day": 1,
+            "T2M": 26.21,
+            "T2M_MAX": 30.45,
+            "T2M_MIN": 23.53,
+            "RH2M": 78.77,
+            "PRECTOTCORR": 7.85,
+            "PS": 935.91,
+            "ALLSKY_SFC_SW_DWN": 18.4
+        },
+        {
+            "day": 2,
+            "T2M": 26.06,
+            "T2M_MAX": 29.67,
+            "T2M_MIN": 23.37,
+            "RH2M": 79.55,
+            "PRECTOTCORR": 7.72,
+            "PS": 935.89,
+            "ALLSKY_SFC_SW_DWN": 17.48
+        },
+        {
+            "day": 3,
+            "T2M": 25.79,
+            "T2M_MAX": 29.33,
+            "T2M_MIN": 23.24,
+            "RH2M": 80.23,
+            "PRECTOTCORR": 8.66,
+            "PS": 935.7,
+            "ALLSKY_SFC_SW_DWN": 16.76
+        },
+        {
+            "day": 4,
+            "T2M": 25.57,
+            "T2M_MAX": 29.01,
+            "T2M_MIN": 23.3,
+            "RH2M": 80.95,
+            "PRECTOTCORR": 8.06,
+            "PS": 935.71,
+            "ALLSKY_SFC_SW_DWN": 15.69
+        },
+        {
+            "day": 5,
+            "T2M": 25.36,
+            "T2M_MAX": 28.83,
+            "T2M_MIN": 23.33,
+            "RH2M": 81.19,
+            "PRECTOTCORR": 8.5,
+            "PS": 935.53,
+            "ALLSKY_SFC_SW_DWN": 14.99
+        },
+        {
+            "day": 6,
+            "T2M": 25.21,
+            "T2M_MAX": 28.62,
+            "T2M_MIN": 23.16,
+            "RH2M": 81.84,
+            "PRECTOTCORR": 9.09,
+            "PS": 935.23,
+            "ALLSKY_SFC_SW_DWN": 14.55
+        },
+        {
+            "day": 7,
+            "T2M": 25.12,
+            "T2M_MAX": 28.42,
+            "T2M_MIN": 23.21,
+            "RH2M": 81.26,
+            "PRECTOTCORR": 9.91,
+            "PS": 934.97,
+            "ALLSKY_SFC_SW_DWN": 14.82
+        }
+    ],
+    "Mumbai": [
+        {
+            "day": 1,
+            "T2M": 27.77,
+            "T2M_MAX": 30.03,
+            "T2M_MIN": 25.88,
+            "RH2M": 84.19,
+            "PRECTOTCORR": 14.78,
+            "PS": 1004.46,
+            "ALLSKY_SFC_SW_DWN": 17.67
+        },
+        {
+            "day": 2,
+            "T2M": 27.76,
+            "T2M_MAX": 29.54,
+            "T2M_MIN": 25.77,
+            "RH2M": 85.67,
+            "PRECTOTCORR": 18.64,
+            "PS": 1004.87,
+            "ALLSKY_SFC_SW_DWN": 17.61
+        },
+        {
+            "day": 3,
+            "T2M": 27.53,
+            "T2M_MAX": 28.98,
+            "T2M_MIN": 25.83,
+            "RH2M": 85.91,
+            "PRECTOTCORR": 27.8,
+            "PS": 1004.49,
+            "ALLSKY_SFC_SW_DWN": 15.78
+        },
+        {
+            "day": 4,
+            "T2M": 27.43,
+            "T2M_MAX": 28.72,
+            "T2M_MIN": 25.77,
+            "RH2M": 86.59,
+            "PRECTOTCORR": 30.86,
+            "PS": 1004.02,
+            "ALLSKY_SFC_SW_DWN": 11.27
+        },
+        {
+            "day": 5,
+            "T2M": 27.33,
+            "T2M_MAX": 28.63,
+            "T2M_MIN": 25.7,
+            "RH2M": 86.65,
+            "PRECTOTCORR": 35.45,
+            "PS": 1003.8,
+            "ALLSKY_SFC_SW_DWN": 11.77
+        },
+        {
+            "day": 6,
+            "T2M": 27.25,
+            "T2M_MAX": 28.69,
+            "T2M_MIN": 25.54,
+            "RH2M": 86.01,
+            "PRECTOTCORR": 38.21,
+            "PS": 1003.74,
+            "ALLSKY_SFC_SW_DWN": 12.46
+        },
+        {
+            "day": 7,
+            "T2M": 27.29,
+            "T2M_MAX": 28.61,
+            "T2M_MIN": 25.54,
+            "RH2M": 86.04,
+            "PRECTOTCORR": 34.86,
+            "PS": 1003.52,
+            "ALLSKY_SFC_SW_DWN": 12.47
+        }
+    ],
+    "Mumbai Suburban": [
+        {
+            "day": 1,
+            "T2M": 27.75,
+            "T2M_MAX": 30.03,
+            "T2M_MIN": 25.88,
+            "RH2M": 84.24,
+            "PRECTOTCORR": 12.73,
+            "PS": 1000.58,
+            "ALLSKY_SFC_SW_DWN": 17.82
+        },
+        {
+            "day": 2,
+            "T2M": 27.77,
+            "T2M_MAX": 29.54,
+            "T2M_MIN": 25.78,
+            "RH2M": 85.59,
+            "PRECTOTCORR": 15.15,
+            "PS": 1000.9,
+            "ALLSKY_SFC_SW_DWN": 18.09
+        },
+        {
+            "day": 3,
+            "T2M": 27.58,
+            "T2M_MAX": 29.07,
+            "T2M_MIN": 25.86,
+            "RH2M": 85.62,
+            "PRECTOTCORR": 20.48,
+            "PS": 1001.06,
+            "ALLSKY_SFC_SW_DWN": 17.06
+        },
+        {
+            "day": 4,
+            "T2M": 27.42,
+            "T2M_MAX": 28.84,
+            "T2M_MIN": 25.77,
+            "RH2M": 86.44,
+            "PRECTOTCORR": 27.64,
+            "PS": 1000.56,
+            "ALLSKY_SFC_SW_DWN": 13.43
+        },
+        {
+            "day": 5,
+            "T2M": 27.35,
+            "T2M_MAX": 28.62,
+            "T2M_MIN": 25.69,
+            "RH2M": 86.51,
+            "PRECTOTCORR": 30.33,
+            "PS": 1000.07,
+            "ALLSKY_SFC_SW_DWN": 12.94
+        },
+        {
+            "day": 6,
+            "T2M": 27.25,
+            "T2M_MAX": 28.61,
+            "T2M_MIN": 25.54,
+            "RH2M": 86.47,
+            "PRECTOTCORR": 31.48,
+            "PS": 1000.2,
+            "ALLSKY_SFC_SW_DWN": 13.56
+        },
+        {
+            "day": 7,
+            "T2M": 27.3,
+            "T2M_MAX": 28.61,
+            "T2M_MIN": 25.53,
+            "RH2M": 86.18,
+            "PRECTOTCORR": 31.35,
+            "PS": 999.99,
+            "ALLSKY_SFC_SW_DWN": 13.39
+        }
+    ],
+    "Nagpur": [
+        {
+            "day": 1,
+            "T2M": 29.11,
+            "T2M_MAX": 33.9,
+            "T2M_MIN": 25.87,
+            "RH2M": 76.72,
+            "PRECTOTCORR": 4.5,
+            "PS": 968.45,
+            "ALLSKY_SFC_SW_DWN": 18.5
+        },
+        {
+            "day": 2,
+            "T2M": 28.7,
+            "T2M_MAX": 33.44,
+            "T2M_MIN": 25.63,
+            "RH2M": 76.38,
+            "PRECTOTCORR": 7.55,
+            "PS": 968.36,
+            "ALLSKY_SFC_SW_DWN": 16.99
+        },
+        {
+            "day": 3,
+            "T2M": 27.6,
+            "T2M_MAX": 31.62,
+            "T2M_MIN": 25.2,
+            "RH2M": 80.22,
+            "PRECTOTCORR": 10.52,
+            "PS": 968.26,
+            "ALLSKY_SFC_SW_DWN": 15.05
+        },
+        {
+            "day": 4,
+            "T2M": 27.26,
+            "T2M_MAX": 30.96,
+            "T2M_MIN": 24.89,
+            "RH2M": 81.21,
+            "PRECTOTCORR": 15.29,
+            "PS": 967.87,
+            "ALLSKY_SFC_SW_DWN": 14.21
+        },
+        {
+            "day": 5,
+            "T2M": 26.99,
+            "T2M_MAX": 30.04,
+            "T2M_MIN": 24.7,
+            "RH2M": 82.62,
+            "PRECTOTCORR": 16.56,
+            "PS": 967.46,
+            "ALLSKY_SFC_SW_DWN": 13.51
+        },
+        {
+            "day": 6,
+            "T2M": 27.06,
+            "T2M_MAX": 30.25,
+            "T2M_MIN": 24.59,
+            "RH2M": 82.63,
+            "PRECTOTCORR": 15.97,
+            "PS": 967.03,
+            "ALLSKY_SFC_SW_DWN": 13.6
+        },
+        {
+            "day": 7,
+            "T2M": 27.09,
+            "T2M_MAX": 30.72,
+            "T2M_MIN": 24.58,
+            "RH2M": 82.42,
+            "PRECTOTCORR": 18.61,
+            "PS": 967.38,
+            "ALLSKY_SFC_SW_DWN": 12.57
+        }
+    ],
+    "Nanded": [
+        {
+            "day": 1,
+            "T2M": 27.81,
+            "T2M_MAX": 31.48,
+            "T2M_MIN": 25.45,
+            "RH2M": 79.3,
+            "PRECTOTCORR": 8.95,
+            "PS": 964.93,
+            "ALLSKY_SFC_SW_DWN": 19.35
+        },
+        {
+            "day": 2,
+            "T2M": 27.52,
+            "T2M_MAX": 30.95,
+            "T2M_MIN": 25.09,
+            "RH2M": 79.42,
+            "PRECTOTCORR": 9.47,
+            "PS": 964.73,
+            "ALLSKY_SFC_SW_DWN": 17.75
+        },
+        {
+            "day": 3,
+            "T2M": 27.27,
+            "T2M_MAX": 30.58,
+            "T2M_MIN": 24.83,
+            "RH2M": 80.78,
+            "PRECTOTCORR": 10.87,
+            "PS": 964.57,
+            "ALLSKY_SFC_SW_DWN": 17.03
+        },
+        {
+            "day": 4,
+            "T2M": 26.93,
+            "T2M_MAX": 30.42,
+            "T2M_MIN": 24.7,
+            "RH2M": 81.11,
+            "PRECTOTCORR": 11.85,
+            "PS": 964.12,
+            "ALLSKY_SFC_SW_DWN": 15.04
+        },
+        {
+            "day": 5,
+            "T2M": 26.78,
+            "T2M_MAX": 29.82,
+            "T2M_MIN": 24.59,
+            "RH2M": 81.8,
+            "PRECTOTCORR": 15.19,
+            "PS": 963.57,
+            "ALLSKY_SFC_SW_DWN": 14.26
+        },
+        {
+            "day": 6,
+            "T2M": 26.6,
+            "T2M_MAX": 29.56,
+            "T2M_MIN": 24.48,
+            "RH2M": 81.84,
+            "PRECTOTCORR": 16.84,
+            "PS": 963.31,
+            "ALLSKY_SFC_SW_DWN": 12.75
+        },
+        {
+            "day": 7,
+            "T2M": 26.55,
+            "T2M_MAX": 29.45,
+            "T2M_MIN": 24.42,
+            "RH2M": 80.75,
+            "PRECTOTCORR": 14.35,
+            "PS": 963.59,
+            "ALLSKY_SFC_SW_DWN": 12.83
+        }
+    ],
+    "Nandurbar": [
+        {
+            "day": 1,
+            "T2M": 29.43,
+            "T2M_MAX": 34.34,
+            "T2M_MIN": 25.67,
+            "RH2M": 70.36,
+            "PRECTOTCORR": 8.51,
+            "PS": 979.98,
+            "ALLSKY_SFC_SW_DWN": 18.51
+        },
+        {
+            "day": 2,
+            "T2M": 28.67,
+            "T2M_MAX": 32.57,
+            "T2M_MIN": 25.51,
+            "RH2M": 72.81,
+            "PRECTOTCORR": 7.34,
+            "PS": 979.7,
+            "ALLSKY_SFC_SW_DWN": 17.28
+        },
+        {
+            "day": 3,
+            "T2M": 28.15,
+            "T2M_MAX": 32.0,
+            "T2M_MIN": 25.09,
+            "RH2M": 74.16,
+            "PRECTOTCORR": 9.13,
+            "PS": 979.37,
+            "ALLSKY_SFC_SW_DWN": 17.1
+        },
+        {
+            "day": 4,
+            "T2M": 27.61,
+            "T2M_MAX": 31.08,
+            "T2M_MIN": 24.85,
+            "RH2M": 76.39,
+            "PRECTOTCORR": 9.82,
+            "PS": 979.27,
+            "ALLSKY_SFC_SW_DWN": 15.7
+        },
+        {
+            "day": 5,
+            "T2M": 27.41,
+            "T2M_MAX": 30.77,
+            "T2M_MIN": 24.73,
+            "RH2M": 77.45,
+            "PRECTOTCORR": 9.5,
+            "PS": 979.07,
+            "ALLSKY_SFC_SW_DWN": 15.73
+        },
+        {
+            "day": 6,
+            "T2M": 27.16,
+            "T2M_MAX": 30.43,
+            "T2M_MIN": 24.65,
+            "RH2M": 78.09,
+            "PRECTOTCORR": 11.09,
+            "PS": 978.95,
+            "ALLSKY_SFC_SW_DWN": 14.87
+        },
+        {
+            "day": 7,
+            "T2M": 27.04,
+            "T2M_MAX": 30.3,
+            "T2M_MIN": 24.56,
+            "RH2M": 79.7,
+            "PRECTOTCORR": 10.51,
+            "PS": 979.06,
+            "ALLSKY_SFC_SW_DWN": 15.23
+        }
+    ],
+    "Nashik": [
+        {
+            "day": 1,
+            "T2M": 26.12,
+            "T2M_MAX": 31.07,
+            "T2M_MIN": 23.45,
+            "RH2M": 78.14,
+            "PRECTOTCORR": 3.56,
+            "PS": 941.54,
+            "ALLSKY_SFC_SW_DWN": 16.5
+        },
+        {
+            "day": 2,
+            "T2M": 25.83,
+            "T2M_MAX": 30.17,
+            "T2M_MIN": 23.2,
+            "RH2M": 78.97,
+            "PRECTOTCORR": 6.11,
+            "PS": 941.57,
+            "ALLSKY_SFC_SW_DWN": 15.7
+        },
+        {
+            "day": 3,
+            "T2M": 25.31,
+            "T2M_MAX": 29.21,
+            "T2M_MIN": 23.1,
+            "RH2M": 80.25,
+            "PRECTOTCORR": 8.85,
+            "PS": 941.32,
+            "ALLSKY_SFC_SW_DWN": 15.01
+        },
+        {
+            "day": 4,
+            "T2M": 25.03,
+            "T2M_MAX": 28.94,
+            "T2M_MIN": 22.92,
+            "RH2M": 82.09,
+            "PRECTOTCORR": 9.78,
+            "PS": 940.97,
+            "ALLSKY_SFC_SW_DWN": 14.03
+        },
+        {
+            "day": 5,
+            "T2M": 24.89,
+            "T2M_MAX": 28.4,
+            "T2M_MIN": 22.92,
+            "RH2M": 82.8,
+            "PRECTOTCORR": 10.82,
+            "PS": 940.62,
+            "ALLSKY_SFC_SW_DWN": 13.5
+        },
+        {
+            "day": 6,
+            "T2M": 24.7,
+            "T2M_MAX": 28.06,
+            "T2M_MIN": 22.95,
+            "RH2M": 82.87,
+            "PRECTOTCORR": 9.94,
+            "PS": 940.6,
+            "ALLSKY_SFC_SW_DWN": 13.1
+        },
+        {
+            "day": 7,
+            "T2M": 24.58,
+            "T2M_MAX": 27.55,
+            "T2M_MIN": 22.91,
+            "RH2M": 83.1,
+            "PRECTOTCORR": 8.78,
+            "PS": 940.8,
+            "ALLSKY_SFC_SW_DWN": 13.1
+        }
+    ],
+    "Osmanabad": [
+        {
+            "day": 1,
+            "T2M": 25.61,
+            "T2M_MAX": 29.75,
+            "T2M_MIN": 22.95,
+            "RH2M": 81.43,
+            "PRECTOTCORR": 10.52,
+            "PS": 932.89,
+            "ALLSKY_SFC_SW_DWN": 17.29
+        },
+        {
+            "day": 2,
+            "T2M": 25.47,
+            "T2M_MAX": 29.29,
+            "T2M_MIN": 22.88,
+            "RH2M": 80.65,
+            "PRECTOTCORR": 9.36,
+            "PS": 932.66,
+            "ALLSKY_SFC_SW_DWN": 17.17
+        },
+        {
+            "day": 3,
+            "T2M": 25.27,
+            "T2M_MAX": 28.51,
+            "T2M_MIN": 22.86,
+            "RH2M": 80.21,
+            "PRECTOTCORR": 9.7,
+            "PS": 932.61,
+            "ALLSKY_SFC_SW_DWN": 16.1
+        },
+        {
+            "day": 4,
+            "T2M": 25.08,
+            "T2M_MAX": 28.1,
+            "T2M_MIN": 22.83,
+            "RH2M": 81.36,
+            "PRECTOTCORR": 8.59,
+            "PS": 932.44,
+            "ALLSKY_SFC_SW_DWN": 15.45
+        },
+        {
+            "day": 5,
+            "T2M": 25.01,
+            "T2M_MAX": 27.97,
+            "T2M_MIN": 22.86,
+            "RH2M": 81.74,
+            "PRECTOTCORR": 8.44,
+            "PS": 931.92,
+            "ALLSKY_SFC_SW_DWN": 13.97
+        },
+        {
+            "day": 6,
+            "T2M": 24.85,
+            "T2M_MAX": 27.95,
+            "T2M_MIN": 22.89,
+            "RH2M": 82.31,
+            "PRECTOTCORR": 7.98,
+            "PS": 932.03,
+            "ALLSKY_SFC_SW_DWN": 13.84
+        },
+        {
+            "day": 7,
+            "T2M": 24.76,
+            "T2M_MAX": 27.84,
+            "T2M_MIN": 22.79,
+            "RH2M": 82.06,
+            "PRECTOTCORR": 7.89,
+            "PS": 931.79,
+            "ALLSKY_SFC_SW_DWN": 13.24
+        }
+    ],
+    "Palghar": [
+        {
+            "day": 1,
+            "T2M": 27.87,
+            "T2M_MAX": 30.69,
+            "T2M_MIN": 25.56,
+            "RH2M": 82.83,
+            "PRECTOTCORR": 10.14,
+            "PS": 1003.0,
+            "ALLSKY_SFC_SW_DWN": 18.61
+        },
+        {
+            "day": 2,
+            "T2M": 27.63,
+            "T2M_MAX": 30.22,
+            "T2M_MIN": 25.51,
+            "RH2M": 82.31,
+            "PRECTOTCORR": 12.6,
+            "PS": 1003.42,
+            "ALLSKY_SFC_SW_DWN": 17.69
+        },
+        {
+            "day": 3,
+            "T2M": 27.43,
+            "T2M_MAX": 29.85,
+            "T2M_MIN": 25.56,
+            "RH2M": 82.61,
+            "PRECTOTCORR": 17.1,
+            "PS": 1003.25,
+            "ALLSKY_SFC_SW_DWN": 16.98
+        },
+        {
+            "day": 4,
+            "T2M": 27.03,
+            "T2M_MAX": 29.35,
+            "T2M_MIN": 25.37,
+            "RH2M": 83.26,
+            "PRECTOTCORR": 21.01,
+            "PS": 1002.87,
+            "ALLSKY_SFC_SW_DWN": 13.3
+        },
+        {
+            "day": 5,
+            "T2M": 26.9,
+            "T2M_MAX": 29.47,
+            "T2M_MIN": 25.27,
+            "RH2M": 84.62,
+            "PRECTOTCORR": 24.02,
+            "PS": 1002.26,
+            "ALLSKY_SFC_SW_DWN": 13.0
+        },
+        {
+            "day": 6,
+            "T2M": 26.95,
+            "T2M_MAX": 29.44,
+            "T2M_MIN": 25.18,
+            "RH2M": 85.54,
+            "PRECTOTCORR": 28.94,
+            "PS": 1001.83,
+            "ALLSKY_SFC_SW_DWN": 13.21
+        },
+        {
+            "day": 7,
+            "T2M": 27.09,
+            "T2M_MAX": 29.27,
+            "T2M_MIN": 25.17,
+            "RH2M": 86.1,
+            "PRECTOTCORR": 23.21,
+            "PS": 1001.5,
+            "ALLSKY_SFC_SW_DWN": 14.28
+        }
+    ],
+    "Parbhani": [
+        {
+            "day": 1,
+            "T2M": 27.98,
+            "T2M_MAX": 31.72,
+            "T2M_MIN": 25.28,
+            "RH2M": 73.18,
+            "PRECTOTCORR": 7.03,
+            "PS": 958.93,
+            "ALLSKY_SFC_SW_DWN": 19.22
+        },
+        {
+            "day": 2,
+            "T2M": 27.29,
+            "T2M_MAX": 31.53,
+            "T2M_MIN": 24.76,
+            "RH2M": 75.2,
+            "PRECTOTCORR": 7.18,
+            "PS": 958.86,
+            "ALLSKY_SFC_SW_DWN": 18.17
+        },
+        {
+            "day": 3,
+            "T2M": 26.81,
+            "T2M_MAX": 30.97,
+            "T2M_MIN": 24.56,
+            "RH2M": 76.35,
+            "PRECTOTCORR": 8.12,
+            "PS": 958.75,
+            "ALLSKY_SFC_SW_DWN": 16.46
+        },
+        {
+            "day": 4,
+            "T2M": 26.54,
+            "T2M_MAX": 30.27,
+            "T2M_MIN": 24.17,
+            "RH2M": 77.47,
+            "PRECTOTCORR": 9.9,
+            "PS": 957.94,
+            "ALLSKY_SFC_SW_DWN": 15.01
+        },
+        {
+            "day": 5,
+            "T2M": 26.37,
+            "T2M_MAX": 30.18,
+            "T2M_MIN": 24.11,
+            "RH2M": 78.8,
+            "PRECTOTCORR": 12.01,
+            "PS": 957.48,
+            "ALLSKY_SFC_SW_DWN": 15.69
+        },
+        {
+            "day": 6,
+            "T2M": 26.11,
+            "T2M_MAX": 30.0,
+            "T2M_MIN": 24.06,
+            "RH2M": 80.01,
+            "PRECTOTCORR": 11.82,
+            "PS": 957.3,
+            "ALLSKY_SFC_SW_DWN": 14.25
+        },
+        {
+            "day": 7,
+            "T2M": 26.03,
+            "T2M_MAX": 29.72,
+            "T2M_MIN": 24.0,
+            "RH2M": 81.2,
+            "PRECTOTCORR": 12.5,
+            "PS": 957.6,
+            "ALLSKY_SFC_SW_DWN": 14.36
+        }
+    ],
+    "Pune": [
+        {
+            "day": 1,
+            "T2M": 25.16,
+            "T2M_MAX": 29.64,
+            "T2M_MIN": 23.1,
+            "RH2M": 83.34,
+            "PRECTOTCORR": 9.93,
+            "PS": 944.21,
+            "ALLSKY_SFC_SW_DWN": 16.43
+        },
+        {
+            "day": 2,
+            "T2M": 24.88,
+            "T2M_MAX": 28.97,
+            "T2M_MIN": 22.82,
+            "RH2M": 83.89,
+            "PRECTOTCORR": 9.42,
+            "PS": 944.34,
+            "ALLSKY_SFC_SW_DWN": 15.11
+        },
+        {
+            "day": 3,
+            "T2M": 24.58,
+            "T2M_MAX": 28.46,
+            "T2M_MIN": 22.77,
+            "RH2M": 84.24,
+            "PRECTOTCORR": 10.2,
+            "PS": 943.91,
+            "ALLSKY_SFC_SW_DWN": 14.24
+        },
+        {
+            "day": 4,
+            "T2M": 24.35,
+            "T2M_MAX": 28.05,
+            "T2M_MIN": 22.69,
+            "RH2M": 84.71,
+            "PRECTOTCORR": 10.26,
+            "PS": 943.6,
+            "ALLSKY_SFC_SW_DWN": 13.87
+        },
+        {
+            "day": 5,
+            "T2M": 24.29,
+            "T2M_MAX": 27.64,
+            "T2M_MIN": 22.62,
+            "RH2M": 85.28,
+            "PRECTOTCORR": 10.36,
+            "PS": 943.62,
+            "ALLSKY_SFC_SW_DWN": 13.28
+        },
+        {
+            "day": 6,
+            "T2M": 24.21,
+            "T2M_MAX": 27.74,
+            "T2M_MIN": 22.61,
+            "RH2M": 85.49,
+            "PRECTOTCORR": 9.62,
+            "PS": 943.75,
+            "ALLSKY_SFC_SW_DWN": 14.05
+        },
+        {
+            "day": 7,
+            "T2M": 24.12,
+            "T2M_MAX": 27.41,
+            "T2M_MIN": 22.63,
+            "RH2M": 86.04,
+            "PRECTOTCORR": 10.84,
+            "PS": 943.56,
+            "ALLSKY_SFC_SW_DWN": 13.54
+        }
+    ],
+    "Raigad": [
+        {
+            "day": 1,
+            "T2M": 26.4,
+            "T2M_MAX": 30.08,
+            "T2M_MIN": 24.55,
+            "RH2M": 91.58,
+            "PRECTOTCORR": 27.62,
+            "PS": 1003.83,
+            "ALLSKY_SFC_SW_DWN": 14.08
+        },
+        {
+            "day": 2,
+            "T2M": 26.35,
+            "T2M_MAX": 29.5,
+            "T2M_MIN": 24.51,
+            "RH2M": 90.8,
+            "PRECTOTCORR": 32.42,
+            "PS": 1003.83,
+            "ALLSKY_SFC_SW_DWN": 12.73
+        },
+        {
+            "day": 3,
+            "T2M": 26.41,
+            "T2M_MAX": 29.24,
+            "T2M_MIN": 24.55,
+            "RH2M": 90.14,
+            "PRECTOTCORR": 35.06,
+            "PS": 1003.46,
+            "ALLSKY_SFC_SW_DWN": 11.14
+        },
+        {
+            "day": 4,
+            "T2M": 26.51,
+            "T2M_MAX": 29.29,
+            "T2M_MIN": 24.61,
+            "RH2M": 89.39,
+            "PRECTOTCORR": 33.54,
+            "PS": 1003.06,
+            "ALLSKY_SFC_SW_DWN": 12.11
+        },
+        {
+            "day": 5,
+            "T2M": 26.54,
+            "T2M_MAX": 29.32,
+            "T2M_MIN": 24.62,
+            "RH2M": 89.11,
+            "PRECTOTCORR": 31.94,
+            "PS": 1003.11,
+            "ALLSKY_SFC_SW_DWN": 12.36
+        },
+        {
+            "day": 6,
+            "T2M": 26.4,
+            "T2M_MAX": 29.05,
+            "T2M_MIN": 24.63,
+            "RH2M": 89.24,
+            "PRECTOTCORR": 29.67,
+            "PS": 1003.53,
+            "ALLSKY_SFC_SW_DWN": 12.04
+        },
+        {
+            "day": 7,
+            "T2M": 26.21,
+            "T2M_MAX": 28.94,
+            "T2M_MIN": 24.58,
+            "RH2M": 89.66,
+            "PRECTOTCORR": 34.06,
+            "PS": 1003.57,
+            "ALLSKY_SFC_SW_DWN": 12.74
+        }
+    ],
+    "Ratnagiri": [
+        {
+            "day": 1,
+            "T2M": 25.97,
+            "T2M_MAX": 28.14,
+            "T2M_MIN": 24.85,
+            "RH2M": 92.67,
+            "PRECTOTCORR": 48.06,
+            "PS": 997.5,
+            "ALLSKY_SFC_SW_DWN": 13.14
+        },
+        {
+            "day": 2,
+            "T2M": 25.92,
+            "T2M_MAX": 28.04,
+            "T2M_MIN": 24.83,
+            "RH2M": 91.27,
+            "PRECTOTCORR": 52.08,
+            "PS": 996.66,
+            "ALLSKY_SFC_SW_DWN": 12.82
+        },
+        {
+            "day": 3,
+            "T2M": 25.93,
+            "T2M_MAX": 28.4,
+            "T2M_MIN": 24.85,
+            "RH2M": 90.89,
+            "PRECTOTCORR": 53.35,
+            "PS": 997.02,
+            "ALLSKY_SFC_SW_DWN": 11.85
+        },
+        {
+            "day": 4,
+            "T2M": 26.04,
+            "T2M_MAX": 27.9,
+            "T2M_MIN": 24.85,
+            "RH2M": 89.26,
+            "PRECTOTCORR": 41.31,
+            "PS": 996.65,
+            "ALLSKY_SFC_SW_DWN": 11.15
+        },
+        {
+            "day": 5,
+            "T2M": 25.99,
+            "T2M_MAX": 27.77,
+            "T2M_MIN": 24.81,
+            "RH2M": 89.37,
+            "PRECTOTCORR": 45.58,
+            "PS": 997.19,
+            "ALLSKY_SFC_SW_DWN": 10.31
+        },
+        {
+            "day": 6,
+            "T2M": 25.94,
+            "T2M_MAX": 27.72,
+            "T2M_MIN": 24.81,
+            "RH2M": 89.2,
+            "PRECTOTCORR": 41.39,
+            "PS": 996.93,
+            "ALLSKY_SFC_SW_DWN": 12.21
+        },
+        {
+            "day": 7,
+            "T2M": 25.8,
+            "T2M_MAX": 27.8,
+            "T2M_MIN": 24.83,
+            "RH2M": 89.34,
+            "PRECTOTCORR": 39.21,
+            "PS": 997.2,
+            "ALLSKY_SFC_SW_DWN": 10.53
+        }
+    ],
+    "Sangli": [
+        {
+            "day": 1,
+            "T2M": 25.06,
+            "T2M_MAX": 29.27,
+            "T2M_MIN": 22.84,
+            "RH2M": 84.77,
+            "PRECTOTCORR": 11.29,
+            "PS": 944.56,
+            "ALLSKY_SFC_SW_DWN": 14.7
+        },
+        {
+            "day": 2,
+            "T2M": 24.96,
+            "T2M_MAX": 28.83,
+            "T2M_MIN": 22.76,
+            "RH2M": 84.57,
+            "PRECTOTCORR": 11.49,
+            "PS": 944.65,
+            "ALLSKY_SFC_SW_DWN": 14.24
+        },
+        {
+            "day": 3,
+            "T2M": 24.67,
+            "T2M_MAX": 28.02,
+            "T2M_MIN": 22.7,
+            "RH2M": 84.5,
+            "PRECTOTCORR": 11.39,
+            "PS": 944.92,
+            "ALLSKY_SFC_SW_DWN": 13.41
+        },
+        {
+            "day": 4,
+            "T2M": 24.53,
+            "T2M_MAX": 27.95,
+            "T2M_MIN": 22.61,
+            "RH2M": 84.2,
+            "PRECTOTCORR": 10.96,
+            "PS": 945.4,
+            "ALLSKY_SFC_SW_DWN": 13.81
+        },
+        {
+            "day": 5,
+            "T2M": 24.41,
+            "T2M_MAX": 27.7,
+            "T2M_MIN": 22.64,
+            "RH2M": 84.55,
+            "PRECTOTCORR": 10.61,
+            "PS": 945.42,
+            "ALLSKY_SFC_SW_DWN": 13.5
+        },
+        {
+            "day": 6,
+            "T2M": 24.34,
+            "T2M_MAX": 27.71,
+            "T2M_MIN": 22.57,
+            "RH2M": 84.69,
+            "PRECTOTCORR": 9.07,
+            "PS": 945.56,
+            "ALLSKY_SFC_SW_DWN": 13.3
+        },
+        {
+            "day": 7,
+            "T2M": 24.15,
+            "T2M_MAX": 27.3,
+            "T2M_MIN": 22.45,
+            "RH2M": 85.16,
+            "PRECTOTCORR": 8.94,
+            "PS": 945.33,
+            "ALLSKY_SFC_SW_DWN": 12.83
+        }
+    ],
+    "Satara": [
+        {
+            "day": 1,
+            "T2M": 25.03,
+            "T2M_MAX": 28.44,
+            "T2M_MIN": 23.13,
+            "RH2M": 85.19,
+            "PRECTOTCORR": 11.94,
+            "PS": 931.12,
+            "ALLSKY_SFC_SW_DWN": 14.7
+        },
+        {
+            "day": 2,
+            "T2M": 24.71,
+            "T2M_MAX": 28.27,
+            "T2M_MIN": 22.88,
+            "RH2M": 86.28,
+            "PRECTOTCORR": 10.1,
+            "PS": 931.51,
+            "ALLSKY_SFC_SW_DWN": 14.86
+        },
+        {
+            "day": 3,
+            "T2M": 24.39,
+            "T2M_MAX": 27.9,
+            "T2M_MIN": 22.58,
+            "RH2M": 86.33,
+            "PRECTOTCORR": 11.18,
+            "PS": 931.43,
+            "ALLSKY_SFC_SW_DWN": 14.01
+        },
+        {
+            "day": 4,
+            "T2M": 24.1,
+            "T2M_MAX": 27.64,
+            "T2M_MIN": 22.46,
+            "RH2M": 86.32,
+            "PRECTOTCORR": 11.67,
+            "PS": 931.21,
+            "ALLSKY_SFC_SW_DWN": 13.44
+        },
+        {
+            "day": 5,
+            "T2M": 23.89,
+            "T2M_MAX": 27.24,
+            "T2M_MIN": 22.39,
+            "RH2M": 86.06,
+            "PRECTOTCORR": 9.67,
+            "PS": 931.23,
+            "ALLSKY_SFC_SW_DWN": 13.36
+        },
+        {
+            "day": 6,
+            "T2M": 23.94,
+            "T2M_MAX": 27.05,
+            "T2M_MIN": 22.3,
+            "RH2M": 86.37,
+            "PRECTOTCORR": 8.71,
+            "PS": 931.5,
+            "ALLSKY_SFC_SW_DWN": 14.1
+        },
+        {
+            "day": 7,
+            "T2M": 23.82,
+            "T2M_MAX": 26.71,
+            "T2M_MIN": 22.35,
+            "RH2M": 86.65,
+            "PRECTOTCORR": 9.59,
+            "PS": 931.05,
+            "ALLSKY_SFC_SW_DWN": 12.98
+        }
+    ],
+    "Sindhudurg": [
+        {
+            "day": 1,
+            "T2M": 25.36,
+            "T2M_MAX": 28.79,
+            "T2M_MIN": 23.83,
+            "RH2M": 93.43,
+            "PRECTOTCORR": 54.13,
+            "PS": 995.13,
+            "ALLSKY_SFC_SW_DWN": 14.18
+        },
+        {
+            "day": 2,
+            "T2M": 25.43,
+            "T2M_MAX": 28.71,
+            "T2M_MIN": 23.84,
+            "RH2M": 91.65,
+            "PRECTOTCORR": 48.64,
+            "PS": 995.17,
+            "ALLSKY_SFC_SW_DWN": 13.31
+        },
+        {
+            "day": 3,
+            "T2M": 25.48,
+            "T2M_MAX": 28.44,
+            "T2M_MIN": 23.9,
+            "RH2M": 90.0,
+            "PRECTOTCORR": 53.46,
+            "PS": 995.67,
+            "ALLSKY_SFC_SW_DWN": 13.63
+        },
+        {
+            "day": 4,
+            "T2M": 25.42,
+            "T2M_MAX": 28.48,
+            "T2M_MIN": 23.91,
+            "RH2M": 88.39,
+            "PRECTOTCORR": 46.63,
+            "PS": 995.31,
+            "ALLSKY_SFC_SW_DWN": 13.26
+        },
+        {
+            "day": 5,
+            "T2M": 25.44,
+            "T2M_MAX": 28.06,
+            "T2M_MIN": 23.91,
+            "RH2M": 88.65,
+            "PRECTOTCORR": 51.39,
+            "PS": 995.6,
+            "ALLSKY_SFC_SW_DWN": 12.53
+        },
+        {
+            "day": 6,
+            "T2M": 25.44,
+            "T2M_MAX": 27.83,
+            "T2M_MIN": 23.88,
+            "RH2M": 88.05,
+            "PRECTOTCORR": 44.16,
+            "PS": 996.02,
+            "ALLSKY_SFC_SW_DWN": 12.96
+        },
+        {
+            "day": 7,
+            "T2M": 25.5,
+            "T2M_MAX": 28.0,
+            "T2M_MIN": 23.81,
+            "RH2M": 88.02,
+            "PRECTOTCORR": 44.06,
+            "PS": 997.21,
+            "ALLSKY_SFC_SW_DWN": 13.75
+        }
+    ],
+    "Solapur": [
+        {
+            "day": 1,
+            "T2M": 27.22,
+            "T2M_MAX": 32.03,
+            "T2M_MIN": 24.29,
+            "RH2M": 77.57,
+            "PRECTOTCORR": 14.04,
+            "PS": 953.71,
+            "ALLSKY_SFC_SW_DWN": 18.89
+        },
+        {
+            "day": 2,
+            "T2M": 27.29,
+            "T2M_MAX": 31.29,
+            "T2M_MIN": 24.38,
+            "RH2M": 77.74,
+            "PRECTOTCORR": 9.24,
+            "PS": 953.69,
+            "ALLSKY_SFC_SW_DWN": 17.92
+        },
+        {
+            "day": 3,
+            "T2M": 27.07,
+            "T2M_MAX": 30.75,
+            "T2M_MIN": 24.32,
+            "RH2M": 77.84,
+            "PRECTOTCORR": 9.6,
+            "PS": 953.72,
+            "ALLSKY_SFC_SW_DWN": 17.57
+        },
+        {
+            "day": 4,
+            "T2M": 26.77,
+            "T2M_MAX": 30.55,
+            "T2M_MIN": 24.16,
+            "RH2M": 77.88,
+            "PRECTOTCORR": 9.12,
+            "PS": 953.59,
+            "ALLSKY_SFC_SW_DWN": 17.65
+        },
+        {
+            "day": 5,
+            "T2M": 26.45,
+            "T2M_MAX": 29.93,
+            "T2M_MIN": 24.1,
+            "RH2M": 77.89,
+            "PRECTOTCORR": 8.73,
+            "PS": 953.5,
+            "ALLSKY_SFC_SW_DWN": 16.24
+        },
+        {
+            "day": 6,
+            "T2M": 26.3,
+            "T2M_MAX": 29.98,
+            "T2M_MIN": 24.03,
+            "RH2M": 78.46,
+            "PRECTOTCORR": 6.94,
+            "PS": 953.08,
+            "ALLSKY_SFC_SW_DWN": 16.31
+        },
+        {
+            "day": 7,
+            "T2M": 26.13,
+            "T2M_MAX": 29.72,
+            "T2M_MIN": 23.93,
+            "RH2M": 78.8,
+            "PRECTOTCORR": 9.43,
+            "PS": 952.69,
+            "ALLSKY_SFC_SW_DWN": 15.17
+        }
+    ],
+    "Thane": [
+        {
+            "day": 1,
+            "T2M": 27.56,
+            "T2M_MAX": 31.18,
+            "T2M_MIN": 25.19,
+            "RH2M": 85.32,
+            "PRECTOTCORR": 11.84,
+            "PS": 1003.94,
+            "ALLSKY_SFC_SW_DWN": 16.87
+        },
+        {
+            "day": 2,
+            "T2M": 27.67,
+            "T2M_MAX": 30.86,
+            "T2M_MIN": 25.33,
+            "RH2M": 85.27,
+            "PRECTOTCORR": 13.4,
+            "PS": 1004.18,
+            "ALLSKY_SFC_SW_DWN": 17.12
+        },
+        {
+            "day": 3,
+            "T2M": 27.53,
+            "T2M_MAX": 30.23,
+            "T2M_MIN": 25.34,
+            "RH2M": 85.88,
+            "PRECTOTCORR": 14.03,
+            "PS": 1004.07,
+            "ALLSKY_SFC_SW_DWN": 15.6
+        },
+        {
+            "day": 4,
+            "T2M": 27.34,
+            "T2M_MAX": 29.79,
+            "T2M_MIN": 25.35,
+            "RH2M": 85.46,
+            "PRECTOTCORR": 14.62,
+            "PS": 1003.5,
+            "ALLSKY_SFC_SW_DWN": 14.38
+        },
+        {
+            "day": 5,
+            "T2M": 27.25,
+            "T2M_MAX": 29.91,
+            "T2M_MIN": 25.26,
+            "RH2M": 86.06,
+            "PRECTOTCORR": 19.1,
+            "PS": 1003.13,
+            "ALLSKY_SFC_SW_DWN": 13.73
+        },
+        {
+            "day": 6,
+            "T2M": 27.01,
+            "T2M_MAX": 29.5,
+            "T2M_MIN": 25.22,
+            "RH2M": 86.77,
+            "PRECTOTCORR": 20.44,
+            "PS": 1003.55,
+            "ALLSKY_SFC_SW_DWN": 12.31
+        },
+        {
+            "day": 7,
+            "T2M": 27.04,
+            "T2M_MAX": 29.48,
+            "T2M_MIN": 25.22,
+            "RH2M": 86.48,
+            "PRECTOTCORR": 22.18,
+            "PS": 1003.36,
+            "ALLSKY_SFC_SW_DWN": 12.46
+        }
+    ],
+    "Wardha": [
+        {
+            "day": 1,
+            "T2M": 29.4,
+            "T2M_MAX": 33.78,
+            "T2M_MIN": 26.17,
+            "RH2M": 75.37,
+            "PRECTOTCORR": 4.66,
+            "PS": 971.31,
+            "ALLSKY_SFC_SW_DWN": 18.9
+        },
+        {
+            "day": 2,
+            "T2M": 28.76,
+            "T2M_MAX": 33.22,
+            "T2M_MIN": 25.83,
+            "RH2M": 76.06,
+            "PRECTOTCORR": 8.82,
+            "PS": 971.53,
+            "ALLSKY_SFC_SW_DWN": 17.64
+        },
+        {
+            "day": 3,
+            "T2M": 28.05,
+            "T2M_MAX": 31.91,
+            "T2M_MIN": 25.25,
+            "RH2M": 78.86,
+            "PRECTOTCORR": 11.03,
+            "PS": 971.36,
+            "ALLSKY_SFC_SW_DWN": 15.77
+        },
+        {
+            "day": 4,
+            "T2M": 27.56,
+            "T2M_MAX": 31.34,
+            "T2M_MIN": 25.05,
+            "RH2M": 80.0,
+            "PRECTOTCORR": 14.04,
+            "PS": 971.15,
+            "ALLSKY_SFC_SW_DWN": 14.83
+        },
+        {
+            "day": 5,
+            "T2M": 27.37,
+            "T2M_MAX": 30.33,
+            "T2M_MIN": 24.93,
+            "RH2M": 80.54,
+            "PRECTOTCORR": 13.84,
+            "PS": 970.9,
+            "ALLSKY_SFC_SW_DWN": 14.09
+        },
+        {
+            "day": 6,
+            "T2M": 27.15,
+            "T2M_MAX": 30.16,
+            "T2M_MIN": 24.89,
+            "RH2M": 80.85,
+            "PRECTOTCORR": 13.94,
+            "PS": 970.61,
+            "ALLSKY_SFC_SW_DWN": 13.2
+        },
+        {
+            "day": 7,
+            "T2M": 27.13,
+            "T2M_MAX": 30.66,
+            "T2M_MIN": 24.69,
+            "RH2M": 80.85,
+            "PRECTOTCORR": 14.55,
+            "PS": 970.63,
+            "ALLSKY_SFC_SW_DWN": 14.01
+        }
+    ],
+    "Washim": [
+        {
+            "day": 1,
+            "T2M": 26.15,
+            "T2M_MAX": 29.53,
+            "T2M_MIN": 23.81,
+            "RH2M": 81.97,
+            "PRECTOTCORR": 10.34,
+            "PS": 944.3,
+            "ALLSKY_SFC_SW_DWN": 15.49
+        },
+        {
+            "day": 2,
+            "T2M": 25.99,
+            "T2M_MAX": 29.21,
+            "T2M_MIN": 23.6,
+            "RH2M": 81.35,
+            "PRECTOTCORR": 9.53,
+            "PS": 944.48,
+            "ALLSKY_SFC_SW_DWN": 15.13
+        },
+        {
+            "day": 3,
+            "T2M": 25.76,
+            "T2M_MAX": 28.91,
+            "T2M_MIN": 23.47,
+            "RH2M": 80.46,
+            "PRECTOTCORR": 10.98,
+            "PS": 944.47,
+            "ALLSKY_SFC_SW_DWN": 15.58
+        },
+        {
+            "day": 4,
+            "T2M": 25.6,
+            "T2M_MAX": 28.89,
+            "T2M_MIN": 23.43,
+            "RH2M": 80.51,
+            "PRECTOTCORR": 9.41,
+            "PS": 944.13,
+            "ALLSKY_SFC_SW_DWN": 14.79
+        },
+        {
+            "day": 5,
+            "T2M": 25.48,
+            "T2M_MAX": 28.31,
+            "T2M_MIN": 23.38,
+            "RH2M": 81.22,
+            "PRECTOTCORR": 10.1,
+            "PS": 943.99,
+            "ALLSKY_SFC_SW_DWN": 13.58
+        },
+        {
+            "day": 6,
+            "T2M": 25.44,
+            "T2M_MAX": 28.46,
+            "T2M_MIN": 23.32,
+            "RH2M": 81.48,
+            "PRECTOTCORR": 11.94,
+            "PS": 943.68,
+            "ALLSKY_SFC_SW_DWN": 13.78
+        },
+        {
+            "day": 7,
+            "T2M": 25.32,
+            "T2M_MAX": 28.42,
+            "T2M_MIN": 23.32,
+            "RH2M": 82.08,
+            "PRECTOTCORR": 10.03,
+            "PS": 943.43,
+            "ALLSKY_SFC_SW_DWN": 13.45
+        }
+    ],
+    "Yavatmal": [
+        {
+            "day": 1,
+            "T2M": 27.43,
+            "T2M_MAX": 32.0,
+            "T2M_MIN": 24.86,
+            "RH2M": 78.85,
+            "PRECTOTCORR": 8.81,
+            "PS": 954.18,
+            "ALLSKY_SFC_SW_DWN": 18.19
+        },
+        {
+            "day": 2,
+            "T2M": 27.13,
+            "T2M_MAX": 31.16,
+            "T2M_MIN": 24.51,
+            "RH2M": 80.19,
+            "PRECTOTCORR": 10.86,
+            "PS": 954.3,
+            "ALLSKY_SFC_SW_DWN": 17.29
+        },
+        {
+            "day": 3,
+            "T2M": 26.86,
+            "T2M_MAX": 30.74,
+            "T2M_MIN": 24.37,
+            "RH2M": 80.87,
+            "PRECTOTCORR": 14.01,
+            "PS": 954.01,
+            "ALLSKY_SFC_SW_DWN": 15.52
+        },
+        {
+            "day": 4,
+            "T2M": 26.65,
+            "T2M_MAX": 30.38,
+            "T2M_MIN": 24.16,
+            "RH2M": 80.64,
+            "PRECTOTCORR": 14.73,
+            "PS": 953.95,
+            "ALLSKY_SFC_SW_DWN": 15.17
+        },
+        {
+            "day": 5,
+            "T2M": 26.28,
+            "T2M_MAX": 29.59,
+            "T2M_MIN": 24.03,
+            "RH2M": 80.6,
+            "PRECTOTCORR": 14.53,
+            "PS": 953.7,
+            "ALLSKY_SFC_SW_DWN": 14.27
+        },
+        {
+            "day": 6,
+            "T2M": 26.14,
+            "T2M_MAX": 29.63,
+            "T2M_MIN": 23.95,
+            "RH2M": 80.77,
+            "PRECTOTCORR": 11.68,
+            "PS": 953.69,
+            "ALLSKY_SFC_SW_DWN": 13.92
+        },
+        {
+            "day": 7,
+            "T2M": 26.05,
+            "T2M_MAX": 29.66,
+            "T2M_MIN": 23.9,
+            "RH2M": 80.96,
+            "PRECTOTCORR": 9.74,
+            "PS": 953.75,
+            "ALLSKY_SFC_SW_DWN": 14.47
+        }
+    ]
+}
