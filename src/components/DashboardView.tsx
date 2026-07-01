@@ -550,6 +550,12 @@ export default function DashboardView({
                     <div className="flex items-center gap-1.5">
                       <Activity className="w-3.5 h-3.5 text-accent-blue shrink-0" />
                       <span className="text-[11px] font-mono font-bold tracking-widest uppercase text-text-primary">Flash Prediction</span>
+                      {timelineIndex > 0 && (
+                        <div className="ml-auto bg-accent-purple text-white px-2 py-0.5 rounded text-[8px] font-mono font-extrabold uppercase flex items-center gap-1 animate-pulse shadow-sm whitespace-nowrap">
+                          <span className="w-1 h-1 rounded-full bg-white animate-ping" />
+                          <span>AI ACTIVE</span>
+                        </div>
+                      )}
                     </div>
 
                     <div className="relative">

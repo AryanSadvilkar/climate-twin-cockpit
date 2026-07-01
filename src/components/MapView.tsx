@@ -1193,15 +1193,7 @@ const MapViewComponent = forwardRef<any, MapViewProps>((
           </div>
         )}
 
-        {/* AI Prediction pill — top-right */}
-        <div className="absolute top-4 right-4 z-[1000] pointer-events-none flex flex-col gap-2 items-end">
-          {activeTimeIndex > 0 && (
-            <div className="bg-accent-purple text-white border border-accent-purple/20 px-3 py-1.5 rounded-xl text-[8.5px] font-mono font-extrabold uppercase flex items-center gap-1.5 animate-pulse shadow-lg">
-              <span className="w-1.5 h-1.5 rounded-full bg-white animate-ping" />
-              <span>AI PREDICTION MODE: ACTIVE</span>
-            </div>
-          )}
-        </div>
+        {/* AI Prediction pill removed and relocated to DashboardView Flash Prediction header */}
 
         {/* IMD agency alert card (state mode) */}
         {mapMode === 'state' && selectedState && (
