@@ -1,6 +1,7 @@
 import express from "express";
 import path from "path";
 import fs from "fs";
+import { spawn } from "child_process";
 import { createServer as createViteServer } from "vite";
 import { GoogleGenAI } from "@google/genai";
 import dotenv from "dotenv";
@@ -247,6 +248,77 @@ app.post("/api/chat", async (req, res) => {
     console.error("Gemini chat endpoint failure:", error);
     res.status(500).json({ error: error.message || "Failed to call Gemini Chat API" });
   }
+});
+
+// Serve district names list for typeahead UI
+app.get('/api/districts', (req, res) => {
+  try {
+    const districtFile = 'C:/Users/manpr/Desktop/Nerd Stuff/hackathon projects/isro/Model Training Data/district_names.txt';
+    const content = fs.readFileSync(districtFile, 'utf-8');
+    const districts = content.split(/\r?\n/).map((d: string) => d.trim()).filter((d: string) => d.length > 0);
+    res.json(districts);
+  } catch (err: any) {
+    console.error('Failed to read district_names.txt:', err);
+    res.status(500).json({ error: 'Could not load district list' });
+  }
+});
+
+// Python model prediction endpoint
+app.post('/api/predict/tomorrow', (req, res) => {
+  const { district } = req.body;
+  if (!district) {
+    return res.status(400).json({ error: 'District is required' });
+  }
+
+  const pythonPath = 'C:\\Users\\manpr\\AppData\\Local\\Programs\\Python\\Python314\\python.exe';
+  const scriptPath = 'c:/Users/manpr/Desktop/Nerd Stuff/hackathon projects/isro/Model Training Data/predict_district.py';
+
+  const child = spawn(pythonPath, [scriptPath], {
+    cwd: 'c:/Users/manpr/Desktop/Nerd Stuff/hackathon projects/isro/Model Training Data',
+    env: { ...process.env, PYTHONIOENCODING: 'utf-8' }
+  });
+  let output = '';
+  let errorOutput = '';
+
+  child.stdin.write(district + '\n');
+  child.stdin.end();
+
+  child.stdout.on('data', (data) => { output += data.toString('utf-8'); });
+  child.stderr.on('data', (data) => { errorOutput += data.toString('utf-8'); });
+
+  const timeout = setTimeout(() => {
+    child.kill();
+    res.status(500).json({ error: 'Prediction timed out' });
+  }, 15000);
+
+  child.on('close', (code) => {
+    clearTimeout(timeout);
+    console.log('District requested:', district);
+    console.log('Raw stdout:', output);
+    if (errorOutput) console.log('Stderr:', errorOutput);
+
+    try {
+      const lines = output.split('\n').filter(line => line.includes(':'));
+      const result: Record<string, string> = {};
+      const keyMap: Record<string, string> = {
+        'District': 'district', 'Date': 'date', 'Mean Temp': 'meanTemp',
+        'Max Temp': 'maxTemp', 'Min Temp': 'minTemp', 'Humidity': 'humidity',
+        'Rainfall': 'rainfall', 'Pressure': 'pressure', 'Solar Radiation': 'solarRadiation'
+      };
+      lines.forEach(line => {
+        const idx = line.indexOf(':');
+        const rawKey = line.substring(0, idx).trim();
+        const value = line.substring(idx + 1).trim();
+        const mappedKey = keyMap[rawKey];
+        if (mappedKey) result[mappedKey] = value;
+      });
+      console.log('Parsed JSON:', result);
+      res.json(result);
+    } catch (err) {
+      console.error('Parse error:', err);
+      res.status(500).json({ error: 'Failed to parse prediction output' });
+    }
+  });
 });
 
 // Serve static assets or mount Vite integration

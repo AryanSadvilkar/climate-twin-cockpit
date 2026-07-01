@@ -2,7 +2,6 @@ import React, { useState, useEffect, useRef, useMemo } from "react";
 import {
   Thermometer,
   CloudRain,
-  Wind,
   Gauge,
   Play,
   Pause,
@@ -49,7 +48,6 @@ const LAYERS_LIST: LayerItem[] = [
   { id: "temp", name: "Temperature", icon: Thermometer, unit: "°C" },
   { id: "humidity", name: "Relative Humidity", icon: Droplet, unit: "%" },
   { id: "precip", name: "Precipitation", icon: CloudRain, unit: "mm" },
-  { id: "wind", name: "Wind Speed", icon: Wind, unit: "km/h" },
   { id: "solar", name: "Solar Radiation", icon: Sun, unit: "W/m²" },
   { id: "pressure", name: "Surface Pressure", icon: Gauge, unit: "hPa" }
 ];
@@ -141,6 +139,17 @@ export default function DashboardView({
   const [isRightPanelOpen, setIsRightPanelOpen] = useState(true);
   const [showSurfaceAnalysis, setShowSurfaceAnalysis] = useState(true);
 
+  // Flash Prediction
+  const [flashDistricts, setFlashDistricts] = useState<string[]>([]);
+  const [flashQuery, setFlashQuery] = useState('');
+  const [flashSuggestions, setFlashSuggestions] = useState<string[]>([]);
+  const [flashSelectedDistrict, setFlashSelectedDistrict] = useState('');
+  const [flashSelectedMetric, setFlashSelectedMetric] = useState<string>('meanTemp');
+  const [flashLoading, setFlashLoading] = useState(false);
+  const [flashResult, setFlashResult] = useState<Record<string, string> | null>(null);
+  const [flashError, setFlashError] = useState<string | null>(null);
+  const [flashViewFull, setFlashViewFull] = useState(false);
+
   // Recalculation stepper sequence
   const recalcTexts = [
     "REGENERATING AIR SHEAR GRIDS...",
@@ -155,6 +164,101 @@ export default function DashboardView({
     }, 2500);
     return () => clearInterval(interval);
   }, []);
+
+  // Fetch district names on mount
+  const MAHARASHTRA_DISTRICTS = [
+    'Ahmednagar','Akola','Amravati','Aurangabad','Beed','Bhandara','Buldhana','Chandrapur',
+    'Dhule','Gadchiroli','Gondia','Hingoli','Jalgaon','Jalna','Kolhapur','Latur','Mumbai',
+    'Mumbai Suburban','Nagpur','Nanded','Nandurbar','Nashik','Osmanabad','Palghar','Parbhani',
+    'Pune','Raigad','Ratnagiri','Sangli','Satara','Sindhudurg','Solapur','Thane','Wardha','Washim','Yavatmal'
+  ];
+
+  useEffect(() => {
+    fetch('/api/districts')
+      .then(r => r.json())
+      .then((data: string[]) => {
+        console.log('[Flash] Districts loaded from API:', data.length, data);
+        setFlashDistricts(data.length > 0 ? data : MAHARASHTRA_DISTRICTS);
+      })
+      .catch(err => {
+        console.warn('[Flash] API fetch failed, using hardcoded list:', err);
+        setFlashDistricts(MAHARASHTRA_DISTRICTS);
+      });
+  }, []);
+
+  // Flash typeahead filter
+  const handleFlashQuery = (val: string) => {
+    setFlashQuery(val);
+    setFlashSelectedDistrict('');
+    setFlashResult(null);
+    setFlashError(null);
+    if (val.trim().length === 0) {
+      setFlashSuggestions([]);
+    } else {
+      setFlashSuggestions(
+        flashDistricts.filter(d => d.toLowerCase().includes(val.toLowerCase())).slice(0, 6)
+      );
+    }
+  };
+
+  const selectFlashDistrict = (name: string) => {
+    console.log('[Flash] District selected:', name);
+    setFlashSelectedDistrict(name);
+    setFlashQuery(name);
+    setFlashSuggestions([]);
+    setFlashResult(null);
+    setFlashError(null);
+  };
+
+  const handleFlashPredict = async () => {
+    if (!flashSelectedDistrict) return;
+    setFlashLoading(true);
+    setFlashError(null);
+    setFlashResult(null);
+    setFlashViewFull(false);
+    console.log('[Flash] Requesting prediction. Body: { district:', flashSelectedDistrict, '}');
+    try {
+      const res = await fetch('/api/predict/tomorrow', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ district: flashSelectedDistrict }),
+      });
+      if (!res.ok) throw new Error(`Server error: ${res.status}`);
+      const data = await res.json();
+      console.log('[Flash] Received raw prediction response data:', data);
+      if (data.error) throw new Error(data.error);
+      console.log('[Flash] Setting result state with:', data);
+      setFlashResult(data);
+    } catch (e: any) {
+      console.error('[Flash] Prediction fetch error:', e);
+      setFlashError(e.message || 'Prediction failed');
+    } finally {
+      console.log('[Flash] Setting loading state to false. Current selected metric:', flashSelectedMetric);
+      setFlashLoading(false);
+    }
+  };
+
+  const FLASH_METRICS: { key: string; label: string }[] = [
+    { key: 'meanTemp', label: 'Mean Temp' },
+    { key: 'maxTemp', label: 'Max Temp' },
+    { key: 'minTemp', label: 'Min Temp' },
+    { key: 'humidity', label: 'Humidity' },
+    { key: 'rainfall', label: 'Rainfall' },
+    { key: 'pressure', label: 'Pressure' },
+    { key: 'solarRadiation', label: 'Solar Rad' },
+  ];
+
+  const FLASH_FULL_LABELS: { key: string; label: string }[] = [
+    { key: 'district', label: 'District' },
+    { key: 'date', label: 'Date' },
+    { key: 'meanTemp', label: 'Mean Temp' },
+    { key: 'maxTemp', label: 'Max Temp' },
+    { key: 'minTemp', label: 'Min Temp' },
+    { key: 'humidity', label: 'Humidity' },
+    { key: 'rainfall', label: 'Rainfall' },
+    { key: 'pressure', label: 'Pressure' },
+    { key: 'solarRadiation', label: 'Solar Radiation' },
+  ];
 
   // Recalculating trigger
   const handleRecalculate = () => {
@@ -219,7 +323,7 @@ export default function DashboardView({
           <MapView
             ref={mapRef} mode="dashboard" activeLayerId={activeLayer} setActiveLayerId={setActiveLayer}
             simulation={simulation} activeTimeIndex={timelineIndex} setActiveTimeIndex={setTimelineIndex}
-            level={level} onLevelChange={setLevel} isLeftPanelOpen={isLeftPanelOpen}
+            level={level} onLevelChange={setLevel} isLeftPanelOpen={isLeftPanelOpen} isRightPanelOpen={isRightPanelOpen}
           />
         </div>
 
@@ -227,90 +331,158 @@ export default function DashboardView({
         {!isMissionControl && (
           <>
             <aside 
-              className="left-sidebar absolute left-4 top-4 bottom-4 w-[260px] bg-bg-surface border border-border-default p-4 flex flex-col justify-between overflow-y-auto hide-scrollbar z-20 rounded-2xl shadow-xl transition-transform duration-300 ease-in-out pointer-events-auto backdrop-blur-md"
+              className="left-sidebar absolute left-0 top-0 w-[260px] bg-bg-surface/70 border border-l-0 border-t-0 border-border-default px-4 pt-4 pb-0 flex flex-col justify-between overflow-y-auto hide-scrollbar z-20 rounded-none rounded-r-2xl shadow-xl transition-transform duration-300 ease-in-out pointer-events-auto backdrop-blur-md font-sans"
               style={{ 
-                transform: isLeftPanelOpen ? 'translateX(0)' : 'translateX(calc(-100% - 16px))' 
+                height: 'calc(100vh - 71.75px)',
+                transform: isLeftPanelOpen ? 'translateX(0)' : 'translateX(-100%)' 
               }}
             >
-              <div className="flex flex-col gap-4">
-                <div className="flex flex-col gap-0.5 border-b border-border-default pb-2">
-                  <span className="text-[10px] font-display font-black text-text-primary uppercase tracking-widest">ATMOSPHERIC LAYER</span>
-                  <p className="text-[8.5px] text-text-secondary mt-1">Select GIS weather telemetry</p>
-                </div>
+              <div className="flex flex-col gap-5">
+                {/* ── SUB-CONTAINER 1: PARAMETER VISUALS ── */}
+                <div className="border border-[#0f172a]/10 rounded-md p-3.5">
+                  <div className="flex flex-col gap-0.5 pb-2 mb-2 border-b border-[#0f172a]/10">
+                    <span className="text-[11px] font-mono font-bold text-text-muted uppercase tracking-[0.15em]">Parameter Visuals</span>
+                    <p className="text-[10px] text-text-secondary mt-0.5 font-mono">Select GIS weather telemetry</p>
+                  </div>
 
-                <div className="flex flex-col gap-1">
-                  {LAYERS_LIST.map((item) => {
-                    const isActive = activeLayer === item.id;
-                    const Icon = item.icon;
-                    return (
-                      <button
-                        key={item.id}
-                        onClick={() => setActiveLayer(item.id as WeatherLayer)}
-                        className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-lg border transition-all cursor-pointer ${isActive ? "bg-accent-blue/10 border-accent-blue/40 text-text-primary font-black" : "bg-bg-elevated/30 border-transparent text-text-secondary hover:bg-bg-elevated/40"
+                  <div className="flex flex-col gap-1">
+                    {LAYERS_LIST.map((item) => {
+                      const isActive = activeLayer === item.id;
+                      const Icon = item.icon;
+
+                      const LAYER_COLORS: Record<string, string> = {
+                        temp:     "#dc2626",
+                        humidity: "#2563eb",
+                        precip:   "#0284c7",
+                        solar:    "#d97706",
+                        pressure: "#7c3aed",
+                      };
+                      const color = LAYER_COLORS[item.id] ?? "#64748b";
+
+                      const activeStyle: React.CSSProperties = isActive ? {
+                        borderColor: color,
+                        borderLeftWidth: "3px",
+                        color: color,
+                      } : {};
+
+                      return (
+                        <button
+                          key={item.id}
+                          onClick={() => setActiveLayer(item.id as WeatherLayer)}
+                          className={`flex flex-row items-center justify-between w-full px-2.5 py-3.5 rounded-md text-left transition-all duration-150 cursor-pointer border ${
+                            isActive
+                              ? "border bg-transparent"
+                              : "border-[#0f172a]/[0.08] bg-[#0f172a]/[0.01] text-text-secondary hover:border-[#0f172a]/20 hover:text-text-primary"
                           }`}
-                      >
-                        <div className="flex items-center gap-2.5">
-                          <Icon className="w-3.5 h-3.5" />
-                          <span className="text-[11px] font-bold tracking-wide uppercase">{item.name}</span>
-                        </div>
-                        <span className="text-[8px] font-mono text-accent-cyan px-1.5 py-0.5 bg-bg-deep rounded">{item.unit}</span>
-                      </button>
-                    );
-                  })}
+                          style={activeStyle}
+                        >
+                          <div className="flex items-center gap-2">
+                            <Icon
+                              className="w-3.5 h-3.5 shrink-0"
+                              style={isActive ? { color } : {}}
+                            />
+                            <span
+                              className="text-[11px] font-sans font-semibold uppercase tracking-wide"
+                              style={isActive ? { color } : {}}
+                            >{item.name}</span>
+                          </div>
+                          <span
+                            className="text-[10px] font-mono tabular-nums"
+                            style={isActive ? { color } : { color: 'var(--text-muted)' }}
+                          >{item.unit}</span>
+                        </button>
+                      );
+                    })}
+                  </div>
                 </div>
 
-                {/* SLIDER CONTROLLER SIMULATOR CARD */}
-                <div className="bg-bg-elevated/35 border border-border-default p-4 rounded-xl flex flex-col gap-4 mt-2">
-                  <div className="flex items-center justify-between border-b border-border-default pb-2">
-                    <span className="text-[10px] font-bold tracking-widest uppercase flex items-center gap-1.5"><Settings className="w-3.5 h-3.5 text-accent-blue" />WHAT-IF SIMULATOR</span>
-                  </div>
-                  <div className="space-y-3 font-mono">
-                    <div className="flex flex-col gap-1.5">
-                      <div className="flex justify-between text-[9px] text-text-secondary">
-                        <span>TEMP BIAS</span>
-                        <span className="font-bold text-text-primary">{params.tempOffset >= 0 ? `+${params.tempOffset.toFixed(1)}` : params.tempOffset.toFixed(1)}°C</span>
+                {/* ── SUB-CONTAINER 2: WHAT-IF SIMULATOR ── */}
+                <div className="border border-[#0f172a]/10 rounded-md p-3.5">
+                  <div className="flex flex-col gap-2.5">
+                    <div className="flex items-center gap-1.5 border-b border-[#0f172a]/10 pb-2">
+                      <Settings className="w-3.5 h-3.5 text-accent-blue" />
+                      <span className="text-[11px] font-mono font-bold tracking-[0.15em] uppercase">What-If Simulator</span>
+                    </div>
+
+                    <div className="flex flex-col gap-2 font-sans">
+                      <div className="flex flex-col gap-1">
+                        <div className="flex justify-between items-baseline">
+                          <span className="text-[11px] font-sans uppercase tracking-widest text-text-secondary">TEMP BIAS</span>
+                          <span className="font-mono text-[12px] font-bold tabular-nums" style={{ color: '#d97706' }}>
+                            {params.tempOffset >= 0 ? `+${params.tempOffset.toFixed(1)}` : params.tempOffset.toFixed(1)}°C
+                          </span>
+                        </div>
+                        <input
+                          type="range" min="-5" max="5" step="0.5"
+                          value={params.tempOffset}
+                          onChange={(e) => setParams(prev => ({ ...prev, tempOffset: parseFloat(e.target.value) }))}
+                          className="sim-slider w-full cursor-pointer"
+                          style={{ '--slider-color': '#d97706' } as React.CSSProperties}
+                        />
                       </div>
-                      <input type="range" min="-5" max="5" step="0.5" value={params.tempOffset} onChange={(e) => setParams(prev => ({ ...prev, tempOffset: parseFloat(e.target.value) }))} className="w-full cursor-pointer accent-accent-blue" />
-                    </div>
-                    <div className="flex flex-col gap-1.5">
-                      <div className="flex justify-between text-[9px] text-text-secondary">
-                        <span>RAIN VOLUME</span>
-                        <span className="font-bold text-text-primary">{params.rainIntensity}%</span>
+
+                      <div className="flex flex-col gap-1">
+                        <div className="flex justify-between items-baseline">
+                          <span className="text-[11px] font-sans uppercase tracking-widest text-text-secondary">RAIN VOLUME</span>
+                          <span className="font-mono text-[12px] font-bold tabular-nums" style={{ color: '#0284c7' }}>
+                            {params.rainIntensity}%
+                          </span>
+                        </div>
+                        <input
+                          type="range" min="0" max="250" step="10"
+                          value={params.rainIntensity}
+                          onChange={(e) => setParams(prev => ({ ...prev, rainIntensity: parseInt(e.target.value) }))}
+                          className="sim-slider w-full cursor-pointer"
+                          style={{ '--slider-color': '#0284c7' } as React.CSSProperties}
+                        />
                       </div>
-                      <input type="range" min="0" max="250" step="10" value={params.rainIntensity} onChange={(e) => setParams(prev => ({ ...prev, rainIntensity: parseInt(e.target.value) }))} className="w-full cursor-pointer accent-accent-blue" />
                     </div>
-                  </div>
-                  <div className="flex flex-col gap-2 pt-1">
-                    <div className="flex gap-2">
-                      <button onClick={handleRecalculate} disabled={isRecalculating} className={`flex-1 text-[9px] uppercase tracking-wider py-2 font-black rounded-lg transition-all duration-200 shadow-md ${isRecalculating ? "bg-bg-elevated text-text-muted border border-border-default" : "bg-accent-blue hover:bg-blue-600 text-white cursor-pointer"}`}>
-                        {isRecalculating ? "RUNNING..." : "Recalculate"}
-                      </button>
-                      <button onClick={handleReset} className="flex-1 py-2 bg-bg-elevated/40 border border-border-default text-text-primary text-[9px] font-bold rounded-lg uppercase tracking-wider hover:bg-bg-elevated/80 transition-all cursor-pointer">
-                        Reset
+
+                    <div className="flex flex-col gap-1.5 pt-0.5 font-sans">
+                      <div className="flex gap-1.5">
+                        <button
+                          onClick={handleRecalculate}
+                          disabled={isRecalculating}
+                          className={`flex-1 text-[11px] uppercase tracking-wider py-1.5 font-black rounded-md transition-all duration-200 ${
+                            isRecalculating
+                              ? "bg-bg-elevated text-text-muted border border-border-default"
+                              : "bg-accent-blue hover:bg-blue-700 text-white cursor-pointer"
+                          }`}
+                        >
+                          {isRecalculating ? "RUNNING..." : "Recalculate"}
+                        </button>
+                        <button
+                          onClick={handleReset}
+                          className="flex-1 py-1.5 bg-transparent border border-[#0f172a]/15 text-text-primary text-[11px] font-bold rounded-md uppercase tracking-wider hover:bg-[#0f172a]/05 transition-all cursor-pointer"
+                        >
+                          Reset
+                        </button>
+                      </div>
+                      <button
+                        onClick={() => {
+                          setSimulation(params);
+                          window.dispatchEvent(new CustomEvent('trigger-report-tab'));
+                        }}
+                        className="w-full py-1.5 bg-transparent border border-[#0f172a]/15 text-text-primary text-[11px] font-bold rounded-md uppercase tracking-wider hover:bg-[#0f172a]/05 transition-all cursor-pointer flex items-center justify-center gap-1.5 active:scale-[0.98]"
+                      >
+                        <span>Synthesize Briefing</span>
                       </button>
                     </div>
-                    <button 
-                      onClick={() => {
-                        setSimulation(params);
-                        window.dispatchEvent(new CustomEvent('trigger-report-tab'));
-                      }} 
-                      className="w-full py-2 bg-bg-elevated/40 border border-border-default text-text-primary text-[9px] font-bold rounded-lg uppercase tracking-wider hover:bg-bg-elevated/80 transition-all cursor-pointer flex items-center justify-center gap-1.5 active:scale-[0.98]"
-                    >
-                      <span>Synthesize Briefing</span>
-                    </button>
                   </div>
                 </div>
               </div>
-              <div className="text-[8px] text-text-secondary mt-6 flex flex-col gap-0.5 border-t border-border-default pt-3.5 uppercase">
+
+              <div className="text-[8px] text-text-secondary mt-6 flex flex-col gap-0.5 border-t border-border-default pt-3.5 uppercase font-mono">
                 <span>SYSTEM STATUS: COMPLIANT</span>
                 <span>SECURE INGRESS: ON</span>
               </div>
             </aside>
             <button
               onClick={() => setIsLeftPanelOpen(!isLeftPanelOpen)}
-              className="absolute top-1/2 -translate-y-1/2 z-30 w-8 h-24 bg-bg-surface/90 border border-l-0 border-border-default rounded-r-2xl flex items-center justify-center cursor-pointer shadow-lg backdrop-blur-md text-text-primary hover:text-white hover:bg-accent-blue transition-all duration-300 ease-in-out pointer-events-auto text-[20px] font-black leading-none border-l-0"
+              className="absolute -translate-y-1/2 z-30 w-8 h-24 bg-bg-surface/70 border border-l-0 border-border-default rounded-r-2xl flex items-center justify-center cursor-pointer shadow-lg backdrop-blur-md text-text-primary hover:text-white hover:bg-accent-blue transition-all duration-300 ease-in-out pointer-events-auto text-[20px] font-black leading-none border-l-0"
               style={{
-                left: isLeftPanelOpen ? '276px' : '0px'
+                left: isLeftPanelOpen ? '260px' : '0px',
+                top: 'calc((100vh - 71.75px) / 2)'
               }}
             >
               {isLeftPanelOpen ? "‹" : "›"}
@@ -354,70 +526,207 @@ export default function DashboardView({
         {!isMissionControl && level !== 'district' && (
           <>
             <aside 
-              className="right-panel absolute right-4 top-4 bottom-4 w-[280px] bg-bg-surface border border-border-default p-4 flex flex-col justify-between overflow-y-auto hide-scrollbar z-20 rounded-2xl shadow-xl transition-transform duration-300 ease-in-out pointer-events-auto backdrop-blur-md"
+              className="right-panel absolute right-0 top-0 w-[280px] bg-bg-surface/70 border border-r-0 border-t-0 border-border-default px-4 pt-4 pb-0 flex flex-col justify-between overflow-y-auto hide-scrollbar z-20 rounded-none rounded-l-2xl shadow-xl transition-transform duration-300 ease-in-out pointer-events-auto backdrop-blur-md"
               style={{ 
-                transform: isRightPanelOpen ? 'translateX(0)' : 'translateX(calc(100% + 16px))' 
+                height: 'calc(100vh - 71.75px)',
+                transform: isRightPanelOpen ? 'translateX(0)' : 'translateX(100%)' 
               }}
             >
-              <div className="flex flex-col gap-4">
-                {showSurfaceAnalysis && (
-                  <div className="bg-bg-elevated/35 border border-border-default p-4 rounded-xl border-l-4 border-l-accent-blue flex flex-col gap-3.5">
-                    <div className="flex justify-between items-center border-b border-border-default pb-2">
-                      <h3 className="text-[10px] font-bold tracking-widest uppercase">Surface Analysis</h3>
-                      <button onClick={() => setShowSurfaceAnalysis(false)} className="text-text-secondary hover:text-accent-blue transition-colors">
-                        <X className="w-3.5 h-3.5" />
-                      </button>
+              {/* 4 SEPARATE BORDERED SUB-CONTAINERS */}
+              <div className="flex flex-col gap-5">
+
+                {/* ── SUB-CONTAINER 1: FLASH PREDICTION ── */}
+                <div className="border border-[#0f172a]/10 rounded-md p-3.5">
+                  <div className="flex flex-col gap-3">
+                    <div className="flex items-center gap-1.5">
+                      <Activity className="w-3.5 h-3.5 text-accent-blue shrink-0" />
+                      <span className="text-[11px] font-mono font-bold tracking-widest uppercase text-text-primary">Flash Prediction</span>
                     </div>
-                    <div className="grid grid-cols-2 gap-3 pb-1">
-                      <div><p className="text-[8.5px] text-text-secondary uppercase mb-1">LST (Land)</p><p className="text-[12px] font-mono font-bold">{computedLST}°C</p></div>
-                      <div><p className="text-[8.5px] text-text-secondary uppercase mb-1">SST (Sea)</p><p className="text-[12px] font-mono font-bold text-accent-cyan">{computedSST}°C</p></div>
+
+                    <div className="relative">
+                      <input
+                        type="text"
+                        value={flashQuery}
+                        onChange={e => handleFlashQuery(e.target.value)}
+                        onKeyDown={e => {
+                          if (e.key === 'Enter' && flashSuggestions.length > 0) selectFlashDistrict(flashSuggestions[0]);
+                          if (e.key === 'Escape') setFlashSuggestions([]);
+                        }}
+                        placeholder="search district..."
+                        className="w-full bg-transparent border border-[#0f172a]/12 rounded-md px-2.5 py-1.5 text-[11px] font-mono text-text-primary placeholder-text-muted focus:outline-none focus:border-[#0f172a]/30 transition-colors"
+                      />
+                      {flashSuggestions.length > 0 && (
+                        <div className="absolute top-full left-0 right-0 mt-0.5 bg-white border border-[#0f172a]/15 rounded-md shadow-lg z-[200] font-mono overflow-hidden">
+                          {flashSuggestions.map(d => (
+                            <button
+                              key={d}
+                              onMouseDown={e => { e.preventDefault(); selectFlashDistrict(d); }}
+                              className="w-full text-left px-2.5 py-1.5 text-[11px] font-mono text-text-secondary hover:bg-[#0f172a]/05 hover:text-text-primary transition-colors cursor-pointer block"
+                            >
+                              {d}
+                            </button>
+                          ))}
+                        </div>
+                      )}
                     </div>
-                    <div className="h-10 w-full flex items-end">
-                      <svg className="w-full h-full" preserveAspectRatio="none" viewBox="0 0 100 45">
-                        <path d={`M0 45 ` + sparklineValues.map((val, i) => `L ${(i / (sparklineValues.length - 1)) * 100} ${45 - val}`).join(" ") + ` L 100 45 Z`} fill="rgba(59, 130, 246, 0.08)" stroke="var(--accent-blue)" strokeWidth="2.0" />
+
+                    <div className="flex flex-wrap gap-1">
+                      {FLASH_METRICS.map(m => {
+                        const isMetricActive = flashSelectedMetric === m.key;
+                        return (
+                          <button
+                            key={m.key}
+                            onClick={() => setFlashSelectedMetric(m.key)}
+                            className={`px-2 py-0.5 rounded-md text-[10px] font-mono font-bold uppercase tracking-wide transition-all cursor-pointer border ${
+                              isMetricActive
+                                ? 'border-accent-blue text-accent-blue bg-transparent'
+                                : 'border-[#0f172a]/10 text-text-muted bg-transparent hover:border-[#0f172a]/20 hover:text-text-secondary'
+                            }`}
+                          >
+                            {m.label}
+                          </button>
+                        );
+                      })}
+                    </div>
+
+                    <button
+                      onClick={handleFlashPredict}
+                      disabled={!flashSelectedDistrict || flashLoading}
+                      className={`w-full py-1.5 rounded-md text-[11px] font-mono font-black uppercase tracking-wider transition-all duration-200 ${
+                        !flashSelectedDistrict || flashLoading
+                          ? 'bg-[#0f172a]/05 border border-[#0f172a]/10 text-text-muted cursor-not-allowed'
+                          : 'bg-accent-blue hover:bg-blue-700 text-white cursor-pointer active:scale-[0.98]'
+                      }`}
+                    >
+                      {flashLoading ? '⟳ predicting...' : '⚡ predict'}
+                    </button>
+
+                    {flashError && (
+                      <div className="text-[10px] font-mono text-red-500 border border-red-400/20 rounded-md px-2 py-1.5">
+                        ⚠ {flashError}
+                      </div>
+                    )}
+
+                    {flashResult && !flashError && (() => {
+                      const metricLabel = FLASH_METRICS.find(m => m.key === flashSelectedMetric)?.label || flashSelectedMetric;
+                      const value = flashResult[flashSelectedMetric] || '—';
+                      return (
+                        <div className="flex flex-col gap-1.5">
+                          <div className="border border-[#0f172a]/10 rounded-md px-2.5 py-2 flex flex-col gap-0.5">
+                            <span className="text-[10px] font-mono uppercase tracking-widest text-text-muted">TOMORROW · {flashResult.date}</span>
+                            <span className="text-[11px] font-mono font-bold text-text-primary">{flashResult.district}</span>
+                            <div className="flex items-baseline gap-1 mt-0.5">
+                              <span className="text-[10px] font-mono text-text-muted uppercase">{metricLabel}:</span>
+                              <span className="text-[18px] font-mono font-black text-accent-blue leading-none">{value}</span>
+                            </div>
+                          </div>
+                          <button
+                            onClick={() => setFlashViewFull(v => !v)}
+                            className="text-[10px] font-mono text-text-secondary hover:text-text-primary transition-colors uppercase tracking-wider cursor-pointer text-left flex items-center gap-1"
+                          >
+                            <ChevronDown className={`w-3 h-3 transition-transform ${flashViewFull ? 'rotate-180' : ''}`} />
+                            {flashViewFull ? 'hide full data' : 'view full data'}
+                          </button>
+                          {flashViewFull && (
+                            <div className="border border-[#0f172a]/08 rounded-md px-2.5 py-2 flex flex-col gap-1">
+                              {FLASH_FULL_LABELS.map(({ key, label }) => (
+                                <div key={key} className="flex justify-between items-center">
+                                  <span className="text-[10px] font-mono text-text-muted uppercase">{label}</span>
+                                  <span className="text-[10px] font-mono font-bold text-text-primary">{flashResult[key] || '—'}</span>
+                                </div>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })()}
+                  </div>
+                </div>
+
+                {/* ── SUB-CONTAINER 2: SURFACE ANALYSIS ── */}
+                <div className="border border-[#0f172a]/10 rounded-md p-3.5">
+                  <div className="flex flex-col gap-2.5">
+                    <span className="text-[11px] font-mono font-bold tracking-widest uppercase text-text-primary">Surface Analysis</span>
+                    <div className="grid grid-cols-2 gap-3">
+                      <div>
+                        <p className="text-[10px] font-mono uppercase text-text-muted mb-0.5">LST · Land</p>
+                        <p className="text-[16px] font-mono font-bold tabular-nums" style={{ color: '#d97706' }}>{computedLST}°C</p>
+                      </div>
+                      <div>
+                        <p className="text-[10px] font-mono uppercase text-text-muted mb-0.5">SST · Sea</p>
+                        <p className="text-[16px] font-mono font-bold tabular-nums text-accent-cyan">{computedSST}°C</p>
+                      </div>
+                    </div>
+                    <div className="h-8 w-full">
+                      <svg className="w-full h-full" preserveAspectRatio="none" viewBox="0 0 100 32">
+                        <polyline
+                          points={sparklineValues.map((val, i) => `${(i / (sparklineValues.length - 1)) * 100},${32 - (val / 45) * 28}`).join(' ')}
+                          fill="none"
+                          stroke="var(--accent-blue)"
+                          strokeWidth="1"
+                          strokeLinejoin="round"
+                          strokeLinecap="round"
+                        />
                       </svg>
                     </div>
                   </div>
-                )}
+                </div>
 
-                {/* MOSDAC LIVE LAYER FEED METRIC CARD */}
-                <div className="bg-bg-elevated/35 border border-border-default p-4 rounded-xl flex flex-col gap-3">
-                  <div className="flex justify-between items-center border-b border-border-default pb-2">
-                    <span className="text-[9.5px] font-bold tracking-widest uppercase flex items-center gap-1.5">
-                      <Activity className="w-3.5 h-3.5 text-accent-cyan" />
-                      {activeLayer === 'solar' ? 'SOLAR RADIATION' : `${activeLayer.toUpperCase()} FEED`}
-                    </span>
-                    <span className="w-1.5 h-1.5 rounded-full bg-accent-cyan" />
-                  </div>
-                  <div className="flex flex-col gap-1 font-mono">
-                    <div className="flex justify-between text-[10px] text-text-secondary">
-                      <span>SENSOR SOURCE:</span>
-                      <span className="text-text-primary font-bold animate-pulse text-accent-cyan">
-                        {activeTelemetry ? "MET-NET LIVE TELEMETRY" : getLiveMosdacMetric(activeLayer, params.tempOffset, params.rainIntensity).label}
+                {/* ── SUB-CONTAINER 3: LAYER FEED ── */}
+                <div className="border border-[#0f172a]/10 rounded-md p-3.5">
+                  <div className="flex flex-col gap-2">
+                    <div className="flex items-center justify-between">
+                      <span className="text-[11px] font-mono font-bold tracking-widest uppercase text-text-primary">
+                        {activeLayer === 'solar' ? 'Solar Rad Feed' : `${activeLayer.toUpperCase()} Feed`}
                       </span>
+                      <span
+                        className="inline-block w-2 h-2 rounded-[2px]"
+                        style={{ backgroundColor: '#0284c7' }}
+                      />
                     </div>
-                    <div className="flex justify-between items-center mt-1">
-                      <span className="text-[8.5px] text-text-secondary uppercase">METRIC VALUE:</span>
-                      <span className={`font-black text-xs ${activeLayer === 'solar' ? 'text-accent-orange animate-pulse text-sm font-extrabold' : 'text-text-primary'}`}>
-                        {getCurrentTelemetryVal(activeTelemetry, activeLayer) || getLiveMosdacMetric(activeLayer, params.tempOffset, params.rainIntensity).val}
-                      </span>
-                    </div>
-                    <div className="text-[8px] text-accent-green font-bold uppercase mt-1 animate-pulse">
-                      &gt; {activeTelemetry ? "STREAM COMPLIANT OK" : getLiveMosdacMetric(activeLayer, params.tempOffset, params.rainIntensity).status}
+                    <div className="flex flex-col gap-1 font-mono">
+                      <div className="flex justify-between items-center">
+                        <span className="text-[10px] font-mono uppercase text-text-muted">Sensor Source</span>
+                        <span className="text-[11px] font-mono font-bold text-text-primary">
+                          {activeTelemetry ? "MET-NET LIVE" : getLiveMosdacMetric(activeLayer, params.tempOffset, params.rainIntensity).label}
+                        </span>
+                      </div>
+                      <div className="flex justify-between items-center">
+                        <span className="text-[10px] font-mono uppercase text-text-muted">Metric Value</span>
+                        <span className="text-[13px] font-mono font-black text-text-primary tabular-nums">
+                          {getCurrentTelemetryVal(activeTelemetry, activeLayer) || getLiveMosdacMetric(activeLayer, params.tempOffset, params.rainIntensity).val}
+                        </span>
+                      </div>
+                      <div className="text-[10px] font-mono text-text-muted uppercase mt-0.5">
+                        {activeTelemetry ? "STREAM COMPLIANT OK" : getLiveMosdacMetric(activeLayer, params.tempOffset, params.rainIntensity).status}
+                      </div>
                     </div>
                   </div>
                 </div>
 
-                <div className="bg-bg-elevated/35 border border-border-default p-4 rounded-xl flex flex-col gap-3">
-                  <div className="flex justify-between items-center border-b border-border-default pb-2">
-                    <span className="text-[9.5px] font-bold tracking-widest uppercase flex items-center gap-1.5"><Radar className="w-3.5 h-3.5 text-accent-cyan" />RADAR CHANNELS</span>
-                    <span className="w-1.5 h-1.5 rounded-full bg-accent-green" />
-                  </div>
-                  <div className="flex flex-col gap-2.5 text-[9px] text-text-secondary">
-                    <div className="flex justify-between"><span>IMD-RADAR-4</span><span className="text-accent-green font-bold">ACTIVE OK</span></div>
-                    <div className="flex justify-between"><span>SATELLITE-7B</span><span className="text-accent-green font-bold">ACTIVE OK</span></div>
+                {/* ── SUB-CONTAINER 4: RADAR CHANNELS ── */}
+                <div className="border border-[#0f172a]/10 rounded-md p-3.5">
+                  <div className="flex flex-col gap-2">
+                    <div className="flex items-center justify-between">
+                      <span className="text-[11px] font-mono font-bold tracking-widest uppercase text-text-primary">Radar Channels</span>
+                      <span
+                        className="inline-block w-2 h-2 rounded-[2px]"
+                        style={{ backgroundColor: '#15803d' }}
+                      />
+                    </div>
+                    <div className="flex flex-col gap-1.5 font-mono">
+                      <div className="flex justify-between items-center">
+                        <span className="text-[11px] font-mono text-text-secondary">IMD-RADAR-4</span>
+                        <span className="text-[10px] font-mono font-bold" style={{ color: '#15803d' }}>ACTIVE OK</span>
+                      </div>
+                      <div className="flex justify-between items-center">
+                        <span className="text-[11px] font-mono text-text-secondary">SATELLITE-7B</span>
+                        <span className="text-[10px] font-mono font-bold" style={{ color: '#15803d' }}>ACTIVE OK</span>
+                      </div>
+                    </div>
                   </div>
                 </div>
+
               </div>
 
               <>
@@ -429,9 +738,10 @@ export default function DashboardView({
             </aside>
             <button
               onClick={() => setIsRightPanelOpen(!isRightPanelOpen)}
-              className="absolute top-1/2 -translate-y-1/2 z-30 w-8 h-24 bg-bg-surface/90 border border-r-0 border-border-default rounded-l-2xl flex items-center justify-center cursor-pointer shadow-lg backdrop-blur-md text-text-primary hover:text-white hover:bg-accent-blue transition-all duration-300 ease-in-out pointer-events-auto text-[20px] font-black leading-none border-r-0"
+              className="absolute -translate-y-1/2 z-30 w-8 h-24 bg-bg-surface/70 border border-r-0 border-border-default rounded-l-2xl flex items-center justify-center cursor-pointer shadow-lg backdrop-blur-md text-text-primary hover:text-white hover:bg-accent-blue transition-all duration-300 ease-in-out pointer-events-auto text-[20px] font-black leading-none border-r-0"
               style={{
-                right: isRightPanelOpen ? '296px' : '0px'
+                right: isRightPanelOpen ? '280px' : '0px',
+                top: 'calc((100vh - 71.75px) / 2)'
               }}
             >
               {isRightPanelOpen ? "›" : "‹"}
@@ -450,6 +760,7 @@ export default function DashboardView({
               <button 
                 onClick={(e) => {
                   e.stopPropagation();
+                  setIsTimelineExpanded(true);
                   setIsPlaying(!isPlaying);
                 }}
                 className="w-7 h-7 rounded-full bg-accent-blue text-white flex items-center justify-center shadow-md cursor-pointer hover:scale-105 duration-150 relative shrink-0"
@@ -527,7 +838,6 @@ export default function DashboardView({
           </div>
         )}
       </div>
-
     </div>
   );
 }

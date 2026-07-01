@@ -43,9 +43,9 @@
 }
 
 @theme {
-  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
-  --font-display: "Geist", "Inter", sans-serif;
-  --font-brand: "Space Grotesk", sans-serif;
+  --font-sans: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  --font-display: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  --font-brand: "Helvetica Neue", Helvetica, Arial, sans-serif;
   --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
 
   --color-bg-void: var(--bg-void);
@@ -561,3 +561,48 @@ path.district-selected {
   box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
 }
 
+/* ── Instrument-grade range slider (What-If Simulator) ── */
+.sim-slider {
+  -webkit-appearance: none;
+  appearance: none;
+  height: 2px;
+  border-radius: 2px;
+  background: rgba(15, 23, 42, 0.12);
+  outline: none;
+  /* Filled portion tinted by --slider-color via JS inline style */
+}
+
+/* WebKit thumb */
+.sim-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 10px;
+  height: 10px;
+  border-radius: 2px;      /* Slightly square thumb */
+  background: var(--slider-color, #1e3a8a);
+  cursor: pointer;
+  border: none;
+  box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.7);
+  transition: transform 0.1s ease;
+}
+.sim-slider::-webkit-slider-thumb:hover {
+  transform: scale(1.2);
+}
+
+/* Firefox thumb */
+.sim-slider::-moz-range-thumb {
+  width: 10px;
+  height: 10px;
+  border-radius: 2px;
+  background: var(--slider-color, #1e3a8a);
+  cursor: pointer;
+  border: none;
+  box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.7);
+}
+
+/* Firefox track */
+.sim-slider::-moz-range-track {
+  height: 2px;
+  border-radius: 2px;
+  background: rgba(15, 23, 42, 0.12);
+}

@@ -116,13 +116,30 @@ interface MapViewProps {
   level: MapLevel;
   onLevelChange: (level: MapLevel) => void;
   isLeftPanelOpen?: boolean;
+  isRightPanelOpen?: boolean;
 }
 
 // Dynamic Legend component styled with glassmorphism
-const Legend = ({ activeLayerId, isLeftPanelOpen = true }: { activeLayerId: WeatherLayer; isLeftPanelOpen?: boolean }) => {
+const Legend = ({ activeLayerId, isLeftPanelOpen = true, dynamicTempRange }: { activeLayerId: WeatherLayer; isLeftPanelOpen?: boolean, dynamicTempRange?: {min: number, max: number} | null }) => {
   const config = useMemo(() => {
     switch (activeLayerId) {
       case "temp":
+        if (dynamicTempRange) {
+          const { min, max } = dynamicTempRange;
+          const steps = 6;
+          const stepSize = (max - min) / (steps - 1);
+          const ticks = Array.from({length: steps}).map((_, i) => {
+            const v = Math.round(min + (i * stepSize));
+            if (i === 0) return `< ${v}°C`;
+            if (i === steps - 1) return `> ${v}°C`;
+            return `${v}°C`;
+          });
+          return {
+            title: "TEMPERATURE",
+            ticks,
+            gradient: "linear-gradient(to right, #3b82f6, #06b6d4, #22c55e, #eab308, #f97316, #ef4444, #7f1d1d)"
+          };
+        }
         return {
           title: "TEMPERATURE",
           ticks: ["< 20°C", "23°C", "26°C", "29°C", "32°C", "> 35°C"],
@@ -161,14 +178,15 @@ const Legend = ({ activeLayerId, isLeftPanelOpen = true }: { activeLayerId: Weat
       default:
         return null;
     }
-  }, [activeLayerId]);
+  }, [activeLayerId, dynamicTempRange]);
 
   if (!config) return null;
 
   return (
     <div 
-      className="absolute bottom-24 z-[1000] panel-card bg-bg-surface border border-border-default p-3 rounded-xl shadow-lg w-52 font-mono text-[9px] select-none flex flex-col gap-2 pointer-events-auto transition-all duration-300 ease-in-out"
+      className="absolute z-[1000] panel-card bg-bg-surface border border-border-default p-3 rounded-xl shadow-lg w-52 font-mono text-[9px] select-none flex flex-col gap-2 pointer-events-auto transition-all duration-300 ease-in-out"
       style={{
+        bottom: '150px',
         left: isLeftPanelOpen ? '290px' : '20px'
       }}
     >
@@ -207,7 +225,8 @@ const MapViewComponent = forwardRef<any, MapViewProps>((
     onZoomChange,
     level: externalLevel,
     onLevelChange: externalOnLevelChange,
-    isLeftPanelOpen
+    isLeftPanelOpen,
+    isRightPanelOpen
   },
   ref
 ) => {
@@ -248,6 +267,11 @@ const MapViewComponent = forwardRef<any, MapViewProps>((
   }, []);
 
   const layerRefs = useRef<Record<string, any>>({});
+  const dynamicStateRef = useRef({
+    selectedDistrict,
+    districtStyle: null as any,
+    stateStyle: null as any
+  });
 
   const fetchDistrictWeather = async (districtName: string, pathLayer: any) => {
     if (districtWeatherCache.current[districtName]) {
@@ -359,8 +383,10 @@ const MapViewComponent = forwardRef<any, MapViewProps>((
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
         if (level === 'district') {
+          // First ESC: close district detail panel
           handleBackToState();
         } else if (mapMode === 'state') {
+          // Second ESC (or if panel is already closed): reset map zoom and UI state to India
           handleBackToIndia();
         }
       }
@@ -454,6 +480,12 @@ const MapViewComponent = forwardRef<any, MapViewProps>((
       worldCopyJump: false
     });
 
+    // Add muted basemap for geographic context outside the GeoJSON shapes
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+      attribution: '&copy; OpenStreetMap &copy; CARTO',
+      className: 'muted-context-basemap'
+    }).addTo(map);
+
     mapInstanceRef.current = map;
 
     // Initial size sync then fit India
@@ -487,6 +519,12 @@ const MapViewComponent = forwardRef<any, MapViewProps>((
   const getColor = (val: number) => {
     switch (activeLayerId) {
       case "temp":
+        if (dynamicTempRange) {
+          const colors = ["#3b82f6", "#06b6d4", "#22c55e", "#eab308", "#f97316", "#ef4444", "#7f1d1d"];
+          return d3.scaleLinear<string>()
+            .domain(colors.map((_, i) => dynamicTempRange.min + i * (dynamicTempRange.max - dynamicTempRange.min) / (colors.length - 1)))
+            .range(colors)(val);
+        }
         if (val < 20) return "#3b82f6";
         if (val < 23) return "#06b6d4";
         if (val < 26) return "#22c55e";
@@ -498,10 +536,29 @@ const MapViewComponent = forwardRef<any, MapViewProps>((
         if (val <= 40) return "#ef4444";
         if (val <= 70) return "#eab308";
         return "#3b82f6";
-      case "precip":
-        if (val === 0) return "#cbd5e1";
-        if (val < 50) return "#22c55e";
-        return "#1e3a8a";
+      case "precip": {
+        let maxP = 50; // Fallback max
+        if (mapMode === 'india' && statesGeoRef.current) {
+          let max = 0;
+          statesGeoRef.current.features.forEach((f: any) => {
+            const rawName = f.properties.st_nm || f.properties.ST_NM || f.properties.NAME_1;
+            const v = getStateValue(rawName);
+            if (v !== null && v > max) max = v;
+          });
+          if (max > 0) maxP = max;
+        } else if (mapMode === 'state' && districtsGeoRef.current && selectedState) {
+          let max = 0;
+          districtsGeoRef.current.features.forEach((f: any) => {
+            const rawName = f.properties.DISTRICT || f.properties.dtname || f.properties.NAME_2 || f.properties.NAME || '';
+            const v = getDistrictValue(rawName, selectedState, f);
+            if (v !== null && v > max) max = v;
+          });
+          if (max > 0) maxP = max;
+        }
+        return d3.scaleLinear<string>()
+          .domain([0, maxP / 2, maxP])
+          .range(["#cbd5e1", "#22c55e", "#1e3a8a"])(val);
+      }
       case "wind":
         return d3.scaleLinear<string>()
           .domain([0, 10, 25, 50])
@@ -600,10 +657,39 @@ const MapViewComponent = forwardRef<any, MapViewProps>((
       
       return Number(baseVal.toFixed(1));
     }
-    
     // Return null if real data hasn't loaded yet to trigger the #cbd5e1 grey fallback
     return null;
   };
+
+  const dynamicTempRange = useMemo(() => {
+    if (activeLayerId !== 'temp') return null;
+    let min = Infinity;
+    let max = -Infinity;
+
+    if (mapMode === 'india' && statesGeoRef.current) {
+      statesGeoRef.current.features.forEach((f: any) => {
+        const rawName = f.properties.st_nm || f.properties.ST_NM || f.properties.NAME_1;
+        const val = getStateValue(rawName);
+        if (val !== null) {
+          if (val < min) min = val;
+          if (val > max) max = val;
+        }
+      });
+    } else if (mapMode === 'state' && districtsGeoRef.current && selectedState) {
+      districtsGeoRef.current.features.forEach((f: any) => {
+        const rawName = f.properties.DISTRICT || f.properties.dtname || f.properties.NAME_2 || f.properties.NAME || '';
+        const val = getDistrictValue(rawName, selectedState, f);
+        if (val !== null) {
+          if (val < min) min = val;
+          if (val > max) max = val;
+        }
+      });
+    }
+    
+    if (min === Infinity || max === -Infinity) return { min: 20, max: 40 };
+    return { min: Math.floor(min), max: Math.ceil(max) };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [mapMode, activeLayerId, activeTimeIndex, simulation, selectedState, dataLoaded]);
 
   // --- MODE TRANSITIONS ---
 
@@ -836,15 +922,29 @@ const MapViewComponent = forwardRef<any, MapViewProps>((
     const val = getDistrictValue(n, selectedState || '', feature);
     const hasSelection = currentSelectedDistrict !== null;
     const isOther = hasSelection && !isSelected;
-    const fillColor = val !== null ? getColor(val) : '#cbd5e1';
+    
+    let fillColor = '#cbd5e1';
+    if (val === null || val === undefined || isNaN(val)) {
+      console.warn(`Missing or invalid data for district: ${n}`);
+    } else {
+      fillColor = getColor(val);
+    }
+
     return {
       fillColor,
       fillOpacity: isSelected ? 1 : (isOther ? 0.45 : 0.85),
-      color: isSelected ? '#ffffff' : 'rgba(255,255,255,0.8)',
-      weight: isSelected ? 3 : 1,
+      color: isSelected ? '#ffffff' : '#ffffff',
+      opacity: 0.9,
+      weight: isSelected ? 3 : 1.5,
       className: isSelected ? 'district-selected' : '',
     };
   };
+
+  useEffect(() => {
+    dynamicStateRef.current.selectedDistrict = selectedDistrict;
+    dynamicStateRef.current.districtStyle = districtStyle;
+    dynamicStateRef.current.stateStyle = stateStyle;
+  });
 
   // Build the India states GeoJSON layer (called once on first data load)
   const buildIndiaLayer = () => {
@@ -862,14 +962,25 @@ const MapViewComponent = forwardRef<any, MapViewProps>((
         pathLayer.on({
           click: () => handleStateClick(rawName),
           mouseover: (e: any) => {
-            e.target.setStyle({ weight: 2.5, color: '#1d4ed8' });
+            const { stateStyle } = dynamicStateRef.current;
+            if (stateStyle) {
+              const base = stateStyle(feature);
+              e.target.setStyle({ ...base, weight: 2.5, color: '#ffffff', fillOpacity: 1 });
+            } else {
+              e.target.setStyle({ weight: 2.5, color: '#ffffff', fillOpacity: 1 });
+            }
             if (!L.Browser.ie) e.target.bringToFront();
             const { tempText, rainText, humidText, solarText, alertLevel } = buildTooltipData(rawName, feature);
             setHoveredRegion({ name: rawName, feature, x: e.originalEvent.clientX, y: e.originalEvent.clientY, temp: tempText, rain: rainText, humid: humidText, solar: solarText, alertLevel });
           },
           mousemove: (e: any) => setHoveredRegion(p => p ? { ...p, x: e.originalEvent.clientX, y: e.originalEvent.clientY } : null),
           mouseout: (e: any) => {
-            if (feature.properties._originalStyle) {
+            const { stateStyle } = dynamicStateRef.current;
+            if (stateStyle) {
+              const s = stateStyle(feature);
+              e.target.setStyle(s);
+              feature.properties._originalStyle = s;
+            } else if (feature.properties._originalStyle) {
               e.target.setStyle(feature.properties._originalStyle);
             }
             setHoveredRegion(null);
@@ -891,7 +1002,7 @@ const MapViewComponent = forwardRef<any, MapViewProps>((
 
         pathLayer.on('add', (e: any) => {
           // Set loading state color initially
-          const initialStyle = { fillColor: '#cbd5e1', fillOpacity: 0.85, color: 'rgba(255,255,255,0.8)', weight: 1 };
+          const initialStyle = { fillColor: '#cbd5e1', fillOpacity: 0.85, color: '#ffffff', opacity: 0.9, weight: 1.5 };
           feature.properties._originalStyle = initialStyle;
           e.target.setStyle(initialStyle);
 
@@ -910,29 +1021,12 @@ const MapViewComponent = forwardRef<any, MapViewProps>((
                 console.log(`[Fetch Resolved] District: ${rawName}, Temp: ${temp}, Layer exists:`, !!layer);
                 
                 if (layer) {
-                  // Directly compute and apply style for temp
-                  // Using getColor for temp explicitly to avoid stale activeLayerId closure
-                  let fillColor = "#cbd5e1";
-                  if (temp < 20) fillColor = "#3b82f6";
-                  else if (temp < 23) fillColor = "#06b6d4";
-                  else if (temp < 26) fillColor = "#22c55e";
-                  else if (temp < 29) fillColor = "#eab308";
-                  else if (temp < 32) fillColor = "#f97316";
-                  else if (temp <= 35) fillColor = "#ef4444";
-                  else fillColor = "#7f1d1d";
-                  
-                  const isSel = rawName === selectedDistrict;
-                  const finalFill = isSel ? '#fef08a' : fillColor;
-                  
-                  const s = {
-                    fillColor: finalFill,
-                    fillOpacity: isSel ? 0.95 : 0.85,
-                    color: isSel ? '#ca8a04' : 'rgba(255,255,255,0.8)',
-                    weight: isSel ? 3 : 1,
-                  };
-                  
-                  feature.properties._originalStyle = s;
-                  layer.setStyle(s);
+                  const { districtStyle, selectedDistrict: currentSel } = dynamicStateRef.current;
+                  if (districtStyle) {
+                    const s = districtStyle(feature, rawName === currentSel, currentSel);
+                    feature.properties._originalStyle = s;
+                    layer.setStyle(s);
+                  }
                 }
               })
               .catch(err => console.error(err));
@@ -947,7 +1041,13 @@ const MapViewComponent = forwardRef<any, MapViewProps>((
         pathLayer.on({
           click: () => handleDistrictClick(rawName),
           mouseover: (e: any) => {
-            e.target.setStyle({ weight: 2.5, color: '#1d4ed8' });
+            const { districtStyle, selectedDistrict: currentSel } = dynamicStateRef.current;
+            if (districtStyle) {
+              const base = districtStyle(feature, rawName === currentSel, currentSel);
+              e.target.setStyle({ ...base, weight: 2.5, color: '#ffffff', fillOpacity: 1 });
+            } else {
+              e.target.setStyle({ weight: 2.5, color: '#ffffff', fillOpacity: 1 });
+            }
             if (!L.Browser.ie) e.target.bringToFront();
             const { tempText, rainText, humidText, solarText, alertLevel } = buildTooltipData(rawName, feature);
             setHoveredRegion({ name: rawName, feature, x: e.originalEvent.clientX, y: e.originalEvent.clientY, temp: tempText, rain: rainText, humid: humidText, solar: solarText, alertLevel });
@@ -957,15 +1057,21 @@ const MapViewComponent = forwardRef<any, MapViewProps>((
           },
           mousemove: (e: any) => setHoveredRegion(p => p ? { ...p, x: e.originalEvent.clientX, y: e.originalEvent.clientY } : null),
           mouseout: (e: any) => {
-            if (feature.properties._originalStyle) {
+            const { districtStyle, selectedDistrict: currentSel } = dynamicStateRef.current;
+            if (districtStyle) {
+              const s = districtStyle(feature, rawName === currentSel, currentSel);
+              e.target.setStyle(s);
+              feature.properties._originalStyle = s;
+            } else if (feature.properties._originalStyle) {
               e.target.setStyle(feature.properties._originalStyle);
             }
             setHoveredRegion(null);
+            
             // Re-bring selected district to front after reset
-            if (selectedDistrict) {
+            if (currentSel) {
               layer.eachLayer((l: any) => {
                 const n = l.feature?.properties?.DISTRICT || l.feature?.properties?.dtname || l.feature?.properties?.NAME_2 || l.feature?.properties?.NAME || '';
-                if (n === selectedDistrict) l.bringToFront();
+                if (n === currentSel) l.bringToFront();
               });
             }
           }
@@ -1039,7 +1145,11 @@ const MapViewComponent = forwardRef<any, MapViewProps>((
 
   return (
     <div className="relative w-full h-full overflow-hidden select-none bg-bg-void animate-fade-in" ref={containerRef}>
-
+      <style>{`
+        .muted-context-basemap {
+          filter: grayscale(70%) opacity(50%);
+        }
+      `}</style>
       <div className={`map-area ${level === 'district' ? 'split-view' : ''}`} style={{ height: '100%', width: '100%' }}>
 
         {/* Leaflet map mount point */}
@@ -1052,8 +1162,8 @@ const MapViewComponent = forwardRef<any, MapViewProps>((
         {/* ← All States back button (state mode only) */}
         {mapMode === 'state' && (
           <button
-            className="back-btn pointer-events-auto"
-            style={{ zIndex: 1000 }}
+            className="back-btn pointer-events-auto transition-all duration-300"
+            style={{ zIndex: 1000, left: isLeftPanelOpen ? '280px' : '20px' }}
             onClick={level === 'district' ? handleBackToState : handleBackToIndia}
           >
             ← {level === 'district' ? selectedState : 'All States'}
@@ -1134,7 +1244,7 @@ const MapViewComponent = forwardRef<any, MapViewProps>((
         </button>
 
         {/* Dynamic Legend */}
-        <Legend activeLayerId={activeLayerId} isLeftPanelOpen={isLeftPanelOpen} />
+        <Legend activeLayerId={activeLayerId} isLeftPanelOpen={isLeftPanelOpen} dynamicTempRange={dynamicTempRange} />
 
         {/* Cursor-following React tooltip */}
         {hoveredRegion && (
@@ -1167,25 +1277,43 @@ const MapViewComponent = forwardRef<any, MapViewProps>((
 
         {/* District Detail Panel (split layout) */}
         {level === 'district' && selectedDistrict && (
-          <div className="district-detail-panel">
-            <div className="dp-header">
+          <div className="district-detail-panel flex flex-col overflow-hidden bg-bg-surface border-l border-border-default shadow-2xl">
+            <div className="flex justify-between items-start p-6 pb-5 border-b border-border-default shrink-0">
               <div>
-                <div className="dp-dot">
-                  <span className="w-1.5 h-1.5 rounded-full bg-accent-green inline-block mr-1.5 animate-pulse" />
-                  <span>PILOT ZONE TELEMETRY</span>
-                </div>
-                <h2 className="dp-title">{getDisplayDistrictName(selectedDistrict)}</h2>
-                <p className="dp-sub">PILOT ZONE TELEMETRY • MH-ID: {getDisplayDistrictName(selectedDistrict).substring(0, 2).toUpperCase()}-{10 + (getDisplayDistrictName(selectedDistrict).length % 90)}</p>
+                <h2 className="flex items-center gap-3 text-2xl font-black text-text-primary uppercase tracking-wide">
+                  <span className="w-3 h-3 rounded-full bg-accent-green inline-block animate-pulse shadow-[0_0_8px_rgba(16,185,129,0.5)]" />
+                  {getDisplayDistrictName(selectedDistrict)}
+                </h2>
+                <p className="text-[10px] text-text-secondary mt-2 font-bold tracking-widest uppercase flex items-center">
+                  PILOT ZONE TELEMETRY <span className="mx-2 opacity-50">•</span> MH-ID: {getDisplayDistrictName(selectedDistrict).substring(0, 2).toUpperCase()}-{10 + (getDisplayDistrictName(selectedDistrict).length % 90)}
+                </p>
               </div>
-              <button className="dp-close hover:border-[var(--accent-blue)] hover:text-text-primary duration-150 flex items-center justify-center font-bold" onClick={handleBackToState}>✕</button>
+              <button 
+                className="w-8 h-8 rounded-full bg-slate-200 hover:bg-slate-300 text-slate-700 flex items-center justify-center transition-colors font-bold text-sm shrink-0"
+                onClick={handleBackToState}
+                aria-label="Close panel"
+              >
+                ✕
+              </button>
             </div>
-            <div className="dp-tabs shrink-0 bg-bg-surface/50">
+            
+            <div className="flex items-center px-6 border-b border-border-default bg-bg-surface/50 overflow-x-auto hide-scrollbar shrink-0">
               {['FORECAST', 'AGRICULTURE', 'IMD DATA', 'ANALYSIS'].map(tab => (
-                <button key={tab} className={`dp-tab ${activeTab === tab ? 'active' : ''}`} onClick={() => setActiveTab(tab)}>{tab}</button>
+                <button 
+                  key={tab} 
+                  className={`py-3.5 px-2 mr-6 text-[10px] tracking-widest whitespace-nowrap border-b-[3px] transition-all ${
+                    activeTab === tab 
+                      ? 'border-accent-green text-accent-green font-bold' 
+                      : 'border-transparent text-text-secondary font-bold hover:text-text-primary'
+                  }`}
+                  onClick={() => setActiveTab(tab)}
+                >
+                  {tab}
+                </button>
               ))}
             </div>
             <div className="flex-1 overflow-y-auto hide-scrollbar bg-bg-surface">
-              {activeTab === 'FORECAST' && <DistrictForecastTab district={selectedDistrict} state={selectedState!} weatherData={districtWeatherCache.current[selectedDistrict]} forecastData={forecastDataRef.current} />}
+              {activeTab === 'FORECAST' && <DistrictForecastTab district={selectedDistrict} state={selectedState!} weatherData={districtWeatherCache.current[selectedDistrict]} forecastData={forecastDataRef.current} activeTimeIndex={activeTimeIndex} />}
               {activeTab === 'IMD DATA' && <DistrictIMDTab district={selectedDistrict} state={selectedState!} />}
               {activeTab === 'AGRICULTURE' && selectedState && selectedDistrict
                 ? <AgricultureView district={selectedDistrict} state={selectedState} />
@@ -1304,7 +1432,7 @@ const DistrictHoverCard = ({ hoveredRegion }: { hoveredRegion: any }) => {
   );
 };
 
-const DistrictForecastTab = ({ district, state, weatherData, forecastData }: { district: string, state: string, weatherData?: any, forecastData?: any }) => {
+const DistrictForecastTab = ({ district, state, weatherData, forecastData, activeTimeIndex }: { district: string, state: string, weatherData?: any, forecastData?: any, activeTimeIndex: number }) => {
   if (!weatherData || !weatherData.current || !weatherData.daily || !weatherData.hourly) {
     return (
       <div className="p-5 flex flex-col items-center justify-center font-mono text-[10px] text-text-secondary h-48 animate-pulse uppercase">
@@ -1346,8 +1474,10 @@ const DistrictForecastTab = ({ district, state, weatherData, forecastData }: { d
     console.log(`[Forecast Debug] NO DATA FOUND for ${forecastKey}`);
   }
 
-  // 5-day forecast mapping
-  const forecastDays = weatherData.daily.time.slice(0, 5).map((dateStr: string, idx: number) => {
+  const highlightIdx = [0, 1, 3, 6][activeTimeIndex] ?? -1;
+
+  // 7-day forecast mapping
+  const forecastDays = weatherData.daily.time.slice(0, 7).map((dateStr: string, idx: number) => {
     const day = formatDay(dateStr);
     const dateLabel = formatDate(dateStr);
     
@@ -1358,20 +1488,16 @@ const DistrictForecastTab = ({ district, state, weatherData, forecastData }: { d
       minTemp = Math.round(f.T2M_MIN);
       rainSum = f.PRECTOTCORR;
       rainProb = Math.min(100, Math.round(f.PRECTOTCORR * 5));
-      console.log(`[Forecast Debug] Day ${idx+1} [AI]: T2M_MAX=${f.T2M_MAX}, T2M_MIN=${f.T2M_MIN}, PRECTOTCORR=${f.PRECTOTCORR}`);
     } else {
       maxTemp = Math.round(weatherData.daily.temperature_2m_max[idx]);
       minTemp = Math.round(weatherData.daily.temperature_2m_min[idx]);
       rainProb = Math.round(weatherData.daily.precipitation_probability_max[idx] || 0);
       rainSum = weatherData.daily.precipitation_sum[idx] || 0;
-      console.log(`[Forecast Debug] Day ${idx+1} [FALLBACK]: T2M_MAX=${maxTemp}, T2M_MIN=${minTemp}`);
     }
     
     const icon = getWeatherIcon(rainProb, rainSum);
     return { day, dateLabel, max: maxTemp, min: minTemp, rain: rainProb, icon };
   });
-
-  console.log('[Forecast Debug] Final Mapped forecastDays Array:', forecastDays);
 
   // 24-hour profile chart mapping
   const hourlyTemps = weatherData.hourly.temperature_2m.slice(0, 24);
@@ -1406,56 +1532,61 @@ const DistrictForecastTab = ({ district, state, weatherData, forecastData }: { d
         <span className="text-[8px] font-mono font-bold text-text-secondary uppercase tracking-widest block mb-2">
           CURRENT METEOROLOGICAL METRICS
         </span>
-        <div className="grid grid-cols-3 gap-2.5">
-          <div className="bg-slate-50 border border-slate-200/60 p-3 rounded-xl">
-            <span className="text-[8px] font-mono text-text-secondary uppercase block mb-0.5">Temperature</span>
-            <span className="text-base font-mono font-bold text-slate-800">{currentTemp}°C</span>
+        <div className="grid grid-cols-3 gap-3">
+          <div className="bg-[#f3f6f4] border border-[#dce4df] p-3 rounded-xl flex flex-col justify-center shadow-sm">
+            <span className="text-[9px] font-bold text-slate-500 uppercase block mb-1">Temperature</span>
+            <span className="text-xl font-bold text-black leading-none">{currentTemp}°C</span>
           </div>
-          <div className="bg-slate-50 border border-slate-200/60 p-3 rounded-xl">
-            <span className="text-[8px] font-mono text-text-secondary uppercase block mb-0.5">Relative Humidity</span>
-            <span className="text-base font-mono font-bold text-slate-800">{currentHumid}%</span>
+          <div className="bg-[#f3f6f4] border border-[#dce4df] p-3 rounded-xl flex flex-col justify-center shadow-sm">
+            <span className="text-[9px] font-bold text-slate-500 uppercase block mb-1">Humidity</span>
+            <span className="text-xl font-bold text-black leading-none">{currentHumid}%</span>
           </div>
-          <div className="bg-slate-50 border border-slate-200/60 p-3 rounded-xl">
-            <span className="text-[8px] font-mono text-text-secondary uppercase block mb-0.5">Precipitation</span>
-            <span className="text-base font-mono font-bold text-slate-800">{currentRain}mm</span>
+          <div className="bg-[#f3f6f4] border border-[#dce4df] p-3 rounded-xl flex flex-col justify-center shadow-sm">
+            <span className="text-[9px] font-bold text-slate-500 uppercase block mb-1">Precipitation</span>
+            <span className="text-xl font-bold text-black leading-none">{currentRain}mm</span>
           </div>
         </div>
       </div>
 
       <div>
-        <span className="text-[8px] font-mono font-bold text-text-secondary uppercase tracking-widest block mb-2">
-          5-DAY WEATHER FORECAST
+        <span className="text-[8px] font-mono font-bold text-text-secondary uppercase tracking-widest block mb-2 mt-2">
+          7-DAY WEATHER FORECAST
         </span>
-        <div className="flex justify-between gap-3 w-full">
-          {forecastDays.map((f: any, i: number) => (
-            <div key={i} className="flex-1 bg-[#f3f6f4] border border-[#dce4df] rounded-xl p-3 pb-3 text-center flex flex-col items-center justify-between h-auto min-h-[10rem] hover:border-[#b8c9c0] hover:shadow-sm transition-all duration-200">
-              
-              {/* Day and Date */}
-              <div className="flex flex-col items-center">
-                <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wide">{f.day}</span>
-                <span className="text-[9px] text-slate-400 font-medium mt-0.5">{f.dateLabel}</span>
+        <div className="flex justify-between gap-3 w-full overflow-x-auto pb-2 pt-1 px-1 -mx-1 hide-scrollbar">
+          {forecastDays.map((f: any, i: number) => {
+            const isHighlighted = i === highlightIdx;
+            return (
+              <div key={i} 
+                className={`flex-1 min-w-[5rem] bg-[#f3f6f4] border ${isHighlighted ? 'border-[#059669] shadow-[0_0_12px_rgba(5,150,105,0.5)]' : 'border-[#dce4df]'} rounded-xl p-3 text-center flex flex-col items-center justify-between h-auto min-h-[11rem] hover:border-[#b8c9c0] hover:shadow-md transition-all duration-300 shadow-sm`}
+              >
+                
+                {/* Day and Date */}
+                <div className="flex flex-col items-center">
+                  <span className="text-[12px] font-bold text-slate-500 uppercase tracking-wide">{f.day}</span>
+                  <span className="text-[10px] text-slate-400 font-medium mt-0.5">{f.dateLabel}</span>
+                </div>
+                
+                {/* Weather Icon */}
+                <span className="my-2 flex items-center justify-center scale-110">{f.icon}</span>
+                
+                {/* Temperatures */}
+                <div className="flex flex-col items-center mt-auto mb-2">
+                  <span className="text-[18px] font-bold text-black leading-none">{f.max}°</span>
+                  <span className="text-xs font-medium text-slate-500 mt-1.5 leading-none">{f.min}°</span>
+                </div>
+                
+                {/* Rain % */}
+                <span className="text-[10px] font-bold text-blue-600 mt-2 tracking-wide w-full border-t border-[#dce4df] pt-2">
+                  {f.rain}% Rain
+                </span>
               </div>
-              
-              {/* Weather Icon */}
-              <span className="my-2 flex items-center justify-center">{f.icon}</span>
-              
-              {/* Temperatures */}
-              <div className="flex flex-col items-center mt-auto mb-1">
-                <span className="text-xl font-bold text-black leading-none">{f.max}°</span>
-                <span className="text-sm font-medium text-slate-500 mt-1 leading-none">{f.min}°</span>
-              </div>
-              
-              {/* Rain % */}
-              <span className="text-[10px] font-bold text-blue-600 mt-2 tracking-wide w-full border-t border-[#dce4df] pt-1">
-                {f.rain}% Rain
-              </span>
-            </div>
-          ))}
+            );
+          })}
         </div>
       </div>
 
-      <div className="bg-slate-50 border border-slate-200/60 p-4 rounded-xl flex flex-col gap-2">
-        <span className="text-[9px] font-mono font-bold text-text-secondary uppercase tracking-widest">
+      <div className="bg-[#f3f6f4] border border-[#dce4df] p-4 rounded-xl flex flex-col gap-2 mt-2 shadow-sm">
+        <span className="text-[9px] font-mono font-bold text-slate-500 uppercase tracking-widest">
           24-Hour Met-Cycle Progression
         </span>
         <div className="h-28 w-full mt-2 relative">
