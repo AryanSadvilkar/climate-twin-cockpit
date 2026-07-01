@@ -190,7 +190,7 @@ const Legend = ({ activeLayerId, isLeftPanelOpen = true, dynamicTempRange }: { a
         left: isLeftPanelOpen ? '290px' : '20px'
       }}
     >
-      <div className="font-black text-text-primary uppercase tracking-wider">{config.title}</div>
+      <div className="font-sans font-bold text-text-primary uppercase tracking-wider">{config.title}</div>
       <div className="h-2 w-full rounded-full" style={{ background: config.gradient }} />
       <div className="flex justify-between text-text-secondary text-[8px] font-bold">
         {config.ticks.map(t => <span key={t}>{t}</span>)}
@@ -735,11 +735,26 @@ const MapViewComponent = forwardRef<any, MapViewProps>((
       if (indiaLayerRef.current) map.removeLayer(indiaLayerRef.current);
 
       // Build district layer for this state only
-      const distFeatures = districtsGeoRef.current?.features.filter((f: any) => {
+      let distFeatures = districtsGeoRef.current?.features.filter((f: any) => {
         const sp = f.properties.ST_NM || f.properties.STATE || f.properties.st_nm || f.properties.NAME_1 || '';
         return sp.toLowerCase() === stateName.toLowerCase() ||
                normalizeStateName(sp) === normalizeStateName(stateName);
       }) || [];
+
+      // Fallback: If no districts are found, use the state outline itself as a single feature
+      if (distFeatures.length === 0 && statesGeoRef.current) {
+        const stateOutline = statesGeoRef.current.features.find((f: any) => {
+          const sp = f.properties.NAME_1 || f.properties.ST_NM || f.properties.STATE || '';
+          return sp.toLowerCase() === stateName.toLowerCase() ||
+                 normalizeStateName(sp) === normalizeStateName(stateName);
+        });
+        if (stateOutline) {
+          const clonedFeature = JSON.parse(JSON.stringify(stateOutline));
+          // Use state name as district name placeholder
+          clonedFeature.properties.DISTRICT = stateOutline.properties.NAME_1 || stateOutline.properties.ST_NM || stateOutline.properties.STATE || stateName;
+          distFeatures = [clonedFeature];
+        }
+      }
 
       if (districtLayerRef.current) map.removeLayer(districtLayerRef.current);
 
@@ -1297,29 +1312,47 @@ const MapViewComponent = forwardRef<any, MapViewProps>((
               </button>
             </div>
             
-            <div className="flex items-center px-6 border-b border-border-default bg-bg-surface/50 overflow-x-auto hide-scrollbar shrink-0">
-              {['FORECAST', 'AGRICULTURE', 'IMD DATA', 'ANALYSIS'].map(tab => (
-                <button 
-                  key={tab} 
-                  className={`py-3.5 px-2 mr-6 text-[10px] tracking-widest whitespace-nowrap border-b-[3px] transition-all ${
-                    activeTab === tab 
-                      ? 'border-accent-green text-accent-green font-bold' 
-                      : 'border-transparent text-text-secondary font-bold hover:text-text-primary'
-                  }`}
-                  onClick={() => setActiveTab(tab)}
-                >
-                  {tab}
-                </button>
-              ))}
-            </div>
-            <div className="flex-1 overflow-y-auto hide-scrollbar bg-bg-surface">
-              {activeTab === 'FORECAST' && <DistrictForecastTab district={selectedDistrict} state={selectedState!} weatherData={districtWeatherCache.current[selectedDistrict]} forecastData={forecastDataRef.current} activeTimeIndex={activeTimeIndex} />}
-              {activeTab === 'IMD DATA' && <DistrictIMDTab district={selectedDistrict} state={selectedState!} />}
-              {activeTab === 'AGRICULTURE' && selectedState && selectedDistrict
-                ? <AgricultureView district={selectedDistrict} state={selectedState} />
-                : null}
-              {activeTab === 'ANALYSIS' && <DistrictAnalysisTab district={selectedDistrict} state={selectedState!} />}
-            </div>
+            {selectedState?.toLowerCase() === 'maharashtra' ? (
+              <>
+                <div className="flex items-center px-6 border-b border-border-default bg-bg-surface/50 overflow-x-auto hide-scrollbar shrink-0">
+                  {['FORECAST', 'AGRICULTURE', 'IMD DATA', 'ANALYSIS'].map(tab => (
+                    <button 
+                      key={tab} 
+                      className={`py-3.5 px-2 mr-6 text-[10px] tracking-widest whitespace-nowrap border-b-[3px] transition-all ${
+                        activeTab === tab 
+                          ? 'border-accent-green text-accent-green font-bold' 
+                          : 'border-transparent text-text-secondary font-bold hover:text-text-primary'
+                      }`}
+                      onClick={() => setActiveTab(tab)}
+                    >
+                      {tab}
+                    </button>
+                  ))}
+                </div>
+                <div className="flex-1 overflow-y-auto hide-scrollbar bg-bg-surface">
+                  {activeTab === 'FORECAST' && <DistrictForecastTab district={selectedDistrict} state={selectedState!} weatherData={districtWeatherCache.current[selectedDistrict]} forecastData={forecastDataRef.current} activeTimeIndex={activeTimeIndex} />}
+                  {activeTab === 'IMD DATA' && <DistrictIMDTab district={selectedDistrict} state={selectedState!} />}
+                  {activeTab === 'AGRICULTURE' && selectedState && selectedDistrict
+                    ? <AgricultureView district={selectedDistrict} state={selectedState} />
+                    : null}
+                  {activeTab === 'ANALYSIS' && <DistrictAnalysisTab district={selectedDistrict} state={selectedState!} />}
+                </div>
+              </>
+            ) : (
+              <div className="flex-1 flex flex-col items-center justify-center p-8 text-center bg-bg-surface">
+                <div className="w-16 h-16 rounded-full bg-slate-100 flex items-center justify-center mb-6">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" className="w-8 h-8 text-slate-400" strokeWidth="2">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                  </svg>
+                </div>
+                <h3 className="text-lg font-bold text-text-primary mb-2">Live Telemetry Not Available</h3>
+                <p className="text-sm text-text-secondary max-w-sm mb-6 leading-relaxed">
+                  Live telemetry not yet available for this region.
+                  <br className="mb-2" />
+                  <button onClick={() => handleStateClick('Maharashtra')} className="font-bold text-accent-blue hover:underline bg-blue-50 px-2 py-1 rounded inline-block mt-1 uppercase tracking-wider">MAHARASHTRA</button> is currently the active pilot zone with full data coverage.
+                </p>
+              </div>
+            )}
           </div>
         )}
 

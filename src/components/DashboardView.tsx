@@ -17,7 +17,8 @@ import {
   Settings,
   Activity,
   Heart,
-  Radar
+  Radar,
+  Info
 } from "lucide-react";
 import { SimulationParams, WeatherLayer } from "../types";
 import { CITIES_INDEX } from "../data";
@@ -110,7 +111,7 @@ export default function DashboardView({
   useEffect(() => {
     const handleMissionToggle = (e: KeyboardEvent) => {
       if (e.key.toLowerCase() === 'm' && !(e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement)) {
-        setIsMissionControlLocal(prev => !prev); 
+        setIsMissionControlLocal(prev => !prev);
       }
     };
     window.addEventListener('keydown', handleMissionToggle);
@@ -167,10 +168,10 @@ export default function DashboardView({
 
   // Fetch district names on mount
   const MAHARASHTRA_DISTRICTS = [
-    'Ahmednagar','Akola','Amravati','Aurangabad','Beed','Bhandara','Buldhana','Chandrapur',
-    'Dhule','Gadchiroli','Gondia','Hingoli','Jalgaon','Jalna','Kolhapur','Latur','Mumbai',
-    'Mumbai Suburban','Nagpur','Nanded','Nandurbar','Nashik','Osmanabad','Palghar','Parbhani',
-    'Pune','Raigad','Ratnagiri','Sangli','Satara','Sindhudurg','Solapur','Thane','Wardha','Washim','Yavatmal'
+    'Ahmednagar', 'Akola', 'Amravati', 'Aurangabad', 'Beed', 'Bhandara', 'Buldhana', 'Chandrapur',
+    'Dhule', 'Gadchiroli', 'Gondia', 'Hingoli', 'Jalgaon', 'Jalna', 'Kolhapur', 'Latur', 'Mumbai',
+    'Mumbai Suburban', 'Nagpur', 'Nanded', 'Nandurbar', 'Nashik', 'Osmanabad', 'Palghar', 'Parbhani',
+    'Pune', 'Raigad', 'Ratnagiri', 'Sangli', 'Satara', 'Sindhudurg', 'Solapur', 'Thane', 'Wardha', 'Washim', 'Yavatmal'
   ];
 
   useEffect(() => {
@@ -312,12 +313,18 @@ export default function DashboardView({
   return (
     <div className="flex flex-col h-full w-full overflow-hidden bg-transparent text-text-primary select-none font-mono relative">
 
+      {/* Low-key, single-line alert banner */}
+      <div className="z-30 bg-bg-surface/90 border-b border-border-default px-6 py-1.5 flex items-center gap-2 text-[10.5px] text-text-secondary backdrop-blur-md shrink-0 font-sans shadow-sm">
+        <Info className="w-3.5 h-3.5 text-accent-cyan shrink-0" />
+        <span className="font-semibold">Live data currently available for Maharashtra only — other states show placeholder view (in development).</span>
+      </div>
+
       {/* OVERHAULED WORKSPACE BLOCK */}
       <div
         className="flex w-full overflow-hidden relative flex-1"
         style={{ height: "100%" }}
       >
-        
+
         {/* BACKGROUND GEOSPATIAL MAP VIEW CONTAINER */}
         <div className="absolute inset-0 z-0 bg-transparent w-full h-full">
           <MapView
@@ -330,11 +337,11 @@ export default function DashboardView({
         {/* SIDEBAR LEFT: FLOATING ABOVE MAP */}
         {!isMissionControl && (
           <>
-            <aside 
+            <aside
               className="left-sidebar absolute left-0 top-0 w-[260px] bg-bg-surface/70 border border-l-0 border-t-0 border-border-default px-4 pt-4 pb-0 flex flex-col justify-between overflow-y-auto hide-scrollbar z-20 rounded-none rounded-r-2xl shadow-xl transition-transform duration-300 ease-in-out pointer-events-auto backdrop-blur-md font-sans"
-              style={{ 
-                height: 'calc(100vh - 71.75px)',
-                transform: isLeftPanelOpen ? 'translateX(0)' : 'translateX(-100%)' 
+              style={{
+                height: 'calc(100vh - 71.75px - 36px)',
+                transform: isLeftPanelOpen ? 'translateX(0)' : 'translateX(-100%)'
               }}
             >
               <div className="flex flex-col gap-5">
@@ -351,10 +358,10 @@ export default function DashboardView({
                       const Icon = item.icon;
 
                       const LAYER_COLORS: Record<string, string> = {
-                        temp:     "#dc2626",
+                        temp: "#dc2626",
                         humidity: "#2563eb",
-                        precip:   "#0284c7",
-                        solar:    "#d97706",
+                        precip: "#0284c7",
+                        solar: "#d97706",
                         pressure: "#7c3aed",
                       };
                       const color = LAYER_COLORS[item.id] ?? "#64748b";
@@ -369,11 +376,10 @@ export default function DashboardView({
                         <button
                           key={item.id}
                           onClick={() => setActiveLayer(item.id as WeatherLayer)}
-                          className={`flex flex-row items-center justify-between w-full px-2.5 py-3.5 rounded-md text-left transition-all duration-150 cursor-pointer border ${
-                            isActive
+                          className={`flex flex-row items-center justify-between w-full px-2.5 py-3.5 rounded-md text-left transition-all duration-150 cursor-pointer border ${isActive
                               ? "border bg-transparent"
                               : "border-[#0f172a]/[0.08] bg-[#0f172a]/[0.01] text-text-secondary hover:border-[#0f172a]/20 hover:text-text-primary"
-                          }`}
+                            }`}
                           style={activeStyle}
                         >
                           <div className="flex items-center gap-2">
@@ -382,7 +388,7 @@ export default function DashboardView({
                               style={isActive ? { color } : {}}
                             />
                             <span
-                              className="text-[11px] font-sans font-semibold uppercase tracking-wide"
+                              className="text-[11px] parameter-label font-semibold uppercase tracking-wide"
                               style={isActive ? { color } : {}}
                             >{item.name}</span>
                           </div>
@@ -397,18 +403,18 @@ export default function DashboardView({
                 </div>
 
                 {/* ── SUB-CONTAINER 2: WHAT-IF SIMULATOR ── */}
-                <div className="border border-[#0f172a]/10 rounded-md p-3.5">
-                  <div className="flex flex-col gap-2.5">
-                    <div className="flex items-center gap-1.5 border-b border-[#0f172a]/10 pb-2">
+                <div className="border border-[#0f172a]/10 rounded-md p-5">
+                  <div className="flex flex-col gap-4">
+                    <div className="flex items-center gap-1.5 border-b border-[#0f172a]/10 pb-3">
                       <Settings className="w-3.5 h-3.5 text-accent-blue" />
                       <span className="text-[11px] font-mono font-bold tracking-[0.15em] uppercase">What-If Simulator</span>
                     </div>
 
-                    <div className="flex flex-col gap-2 font-sans">
-                      <div className="flex flex-col gap-1">
+                    <div className="flex flex-col gap-4 font-sans mt-2">
+                      <div className="flex flex-col gap-2">
                         <div className="flex justify-between items-baseline">
                           <span className="text-[11px] font-sans uppercase tracking-widest text-text-secondary">TEMP BIAS</span>
-                          <span className="font-mono text-[12px] font-bold tabular-nums" style={{ color: '#d97706' }}>
+                          <span className="font-roboto text-[12px] font-bold tabular-nums" style={{ color: '#d97706' }}>
                             {params.tempOffset >= 0 ? `+${params.tempOffset.toFixed(1)}` : params.tempOffset.toFixed(1)}°C
                           </span>
                         </div>
@@ -421,7 +427,7 @@ export default function DashboardView({
                         />
                       </div>
 
-                      <div className="flex flex-col gap-1">
+                      <div className="flex flex-col gap-2">
                         <div className="flex justify-between items-baseline">
                           <span className="text-[11px] font-sans uppercase tracking-widest text-text-secondary">RAIN VOLUME</span>
                           <span className="font-mono text-[12px] font-bold tabular-nums" style={{ color: '#0284c7' }}>
@@ -438,16 +444,15 @@ export default function DashboardView({
                       </div>
                     </div>
 
-                    <div className="flex flex-col gap-1.5 pt-0.5 font-sans">
-                      <div className="flex gap-1.5">
+                    <div className="flex flex-col gap-3 pt-3 font-sans mt-2">
+                      <div className="flex gap-2">
                         <button
                           onClick={handleRecalculate}
                           disabled={isRecalculating}
-                          className={`flex-1 text-[11px] uppercase tracking-wider py-1.5 font-black rounded-md transition-all duration-200 ${
-                            isRecalculating
+                          className={`flex-1 text-[11px] uppercase tracking-wider py-1.5 font-black rounded-md transition-all duration-200 ${isRecalculating
                               ? "bg-bg-elevated text-text-muted border border-border-default"
                               : "bg-accent-blue hover:bg-blue-700 text-white cursor-pointer"
-                          }`}
+                            }`}
                         >
                           {isRecalculating ? "RUNNING..." : "Recalculate"}
                         </button>
@@ -482,7 +487,7 @@ export default function DashboardView({
               className="absolute -translate-y-1/2 z-30 w-8 h-24 bg-bg-surface/70 border border-l-0 border-border-default rounded-r-2xl flex items-center justify-center cursor-pointer shadow-lg backdrop-blur-md text-text-primary hover:text-white hover:bg-accent-blue transition-all duration-300 ease-in-out pointer-events-auto text-[20px] font-black leading-none border-l-0"
               style={{
                 left: isLeftPanelOpen ? '260px' : '0px',
-                top: 'calc((100vh - 71.75px) / 2)'
+                top: 'calc((100vh - 71.75px - 36px) / 2)'
               }}
             >
               {isLeftPanelOpen ? "‹" : "›"}
@@ -525,11 +530,11 @@ export default function DashboardView({
         {/* SIDEBAR RIGHT: FLOATING, COLLAPSIBLE TO SIDE — hidden when district detail panel is open */}
         {!isMissionControl && level !== 'district' && (
           <>
-            <aside 
+            <aside
               className="right-panel absolute right-0 top-0 w-[280px] bg-bg-surface/70 border border-r-0 border-t-0 border-border-default px-4 pt-4 pb-0 flex flex-col justify-between overflow-y-auto hide-scrollbar z-20 rounded-none rounded-l-2xl shadow-xl transition-transform duration-300 ease-in-out pointer-events-auto backdrop-blur-md"
-              style={{ 
-                height: 'calc(100vh - 71.75px)',
-                transform: isRightPanelOpen ? 'translateX(0)' : 'translateX(100%)' 
+              style={{
+                height: 'calc(100vh - 71.75px - 36px)',
+                transform: isRightPanelOpen ? 'translateX(0)' : 'translateX(100%)'
               }}
             >
               {/* 4 SEPARATE BORDERED SUB-CONTAINERS */}
@@ -577,11 +582,10 @@ export default function DashboardView({
                           <button
                             key={m.key}
                             onClick={() => setFlashSelectedMetric(m.key)}
-                            className={`px-2 py-0.5 rounded-md text-[10px] font-mono font-bold uppercase tracking-wide transition-all cursor-pointer border ${
-                              isMetricActive
+                            className={`px-2 py-0.5 rounded-md text-[10px] font-mono font-bold uppercase tracking-wide transition-all cursor-pointer border ${isMetricActive
                                 ? 'border-accent-blue text-accent-blue bg-transparent'
                                 : 'border-[#0f172a]/10 text-text-muted bg-transparent hover:border-[#0f172a]/20 hover:text-text-secondary'
-                            }`}
+                              }`}
                           >
                             {m.label}
                           </button>
@@ -592,11 +596,10 @@ export default function DashboardView({
                     <button
                       onClick={handleFlashPredict}
                       disabled={!flashSelectedDistrict || flashLoading}
-                      className={`w-full py-1.5 rounded-md text-[11px] font-mono font-black uppercase tracking-wider transition-all duration-200 ${
-                        !flashSelectedDistrict || flashLoading
+                      className={`w-full py-1.5 rounded-md text-[11px] font-mono font-black uppercase tracking-wider transition-all duration-200 ${!flashSelectedDistrict || flashLoading
                           ? 'bg-[#0f172a]/05 border border-[#0f172a]/10 text-text-muted cursor-not-allowed'
                           : 'bg-accent-blue hover:bg-blue-700 text-white cursor-pointer active:scale-[0.98]'
-                      }`}
+                        }`}
                     >
                       {flashLoading ? '⟳ predicting...' : '⚡ predict'}
                     </button>
@@ -741,7 +744,7 @@ export default function DashboardView({
               className="absolute -translate-y-1/2 z-30 w-8 h-24 bg-bg-surface/70 border border-r-0 border-border-default rounded-l-2xl flex items-center justify-center cursor-pointer shadow-lg backdrop-blur-md text-text-primary hover:text-white hover:bg-accent-blue transition-all duration-300 ease-in-out pointer-events-auto text-[20px] font-black leading-none border-r-0"
               style={{
                 right: isRightPanelOpen ? '280px' : '0px',
-                top: 'calc((100vh - 71.75px) / 2)'
+                top: 'calc((100vh - 71.75px - 36px) / 2)'
               }}
             >
               {isRightPanelOpen ? "›" : "‹"}
@@ -753,11 +756,11 @@ export default function DashboardView({
         <div className={`absolute bottom-6 z-40 transition-all duration-500 ease-in-out ${level === 'district' ? 'left-1/4' : 'left-1/2'} -translate-x-1/2`}>
           {!isTimelineExpanded ? (
             /* Collapsed State capsule pill */
-            <div 
+            <div
               onClick={() => setIsTimelineExpanded(true)}
               className="panel-card cursor-pointer flex items-center gap-3.5 px-5 py-2.5 bg-bg-surface border border-border-default rounded-full shadow-lg select-none backdrop-blur-md hover:border-accent-blue/60 hover:shadow-xl transition-all duration-200 pointer-events-auto"
             >
-              <button 
+              <button
                 onClick={(e) => {
                   e.stopPropagation();
                   setIsTimelineExpanded(true);
@@ -774,7 +777,7 @@ export default function DashboardView({
             </div>
           ) : (
             /* Expanded State container */
-            <div 
+            <div
               className="w-[520px] max-w-[90vw] p-4 flex flex-col gap-3 rounded-2xl bg-bg-surface border border-border-default shadow-2xl backdrop-blur-md transition-all duration-300 pointer-events-auto"
             >
               <div className="flex justify-between items-center select-none border-b border-border-default/40 pb-2">
@@ -782,7 +785,7 @@ export default function DashboardView({
                   <span className="text-[11px] font-black tracking-widest text-text-primary uppercase">PROGRESSION ENGINE</span>
                   <span className="text-[8px] text-text-secondary uppercase px-1.5 py-0.5 bg-bg-deep rounded font-mono">GFS AUTO CYCLES</span>
                 </div>
-                <button 
+                <button
                   onClick={(e) => {
                     e.stopPropagation();
                     setIsTimelineExpanded(false);
@@ -803,7 +806,7 @@ export default function DashboardView({
                     <div className="absolute inset-y-0 left-0 bg-accent-blue rounded-full transition-all" style={{ width: `${(timelineIndex / (TIMELINE_STEPS.length - 1)) * 100}%` }} />
                     <div className="absolute inset-x-0 -top-1 h-full">
                       {TIMELINE_STEPS.map((step, idx) => (
-                        <button key={step} onClick={() => { setTimelineIndex(idx); setIsPlaying(false); }} 
+                        <button key={step} onClick={() => { setTimelineIndex(idx); setIsPlaying(false); }}
                           className={`absolute top-0 w-3 h-3 -translate-x-1/2 rounded-full border-2 border-bg-surface cursor-pointer ${idx === timelineIndex ? "bg-accent-blue scale-110" : "bg-text-muted"}`}
                           style={{ left: `${(idx / (TIMELINE_STEPS.length - 1)) * 100}%` }}
                         />

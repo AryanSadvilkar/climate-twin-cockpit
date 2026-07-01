@@ -369,7 +369,7 @@ export default function ReportsView({ simulation, activeLayer, selectedRegion }:
               {/* Temp Card */}
               <div className="panel-card bg-bg-surface p-5 rounded-2xl border border-border-default shadow-sm flex flex-col justify-between">
                 <div>
-                  <span className="text-[9px] font-mono font-black text-text-muted uppercase tracking-widest block">TEMPERATURE</span>
+                  <span className="text-[9px] font-sans font-bold text-text-muted uppercase tracking-widest block">TEMPERATURE</span>
                   <p className="text-2xl font-mono font-black text-text-primary mt-2">
                     {trends.currentTemp.toFixed(1)}°C
                   </p>
@@ -385,7 +385,7 @@ export default function ReportsView({ simulation, activeLayer, selectedRegion }:
               {/* Precipitation Card */}
               <div className="panel-card bg-bg-surface p-5 rounded-2xl border border-border-default shadow-sm flex flex-col justify-between">
                 <div>
-                  <span className="text-[9px] font-mono font-black text-text-muted uppercase tracking-widest block">PRECIPITATION</span>
+                  <span className="text-[9px] font-sans font-bold text-text-muted uppercase tracking-widest block">PRECIPITATION</span>
                   <p className="text-2xl font-mono font-black text-text-primary mt-2">
                     {trends.currentPrecip.toFixed(1)} mm
                   </p>
@@ -401,7 +401,7 @@ export default function ReportsView({ simulation, activeLayer, selectedRegion }:
               {/* Humidity Card */}
               <div className="panel-card bg-bg-surface p-5 rounded-2xl border border-border-default shadow-sm flex flex-col justify-between">
                 <div>
-                  <span className="text-[9px] font-mono font-black text-text-muted uppercase tracking-widest block">RELATIVE HUMIDITY</span>
+                  <span className="text-[9px] font-sans font-bold text-text-muted uppercase tracking-widest block">RELATIVE HUMIDITY</span>
                   <p className="text-2xl font-mono font-black text-text-primary mt-2">
                     {Math.round(trends.currentHumidity)}%
                   </p>
