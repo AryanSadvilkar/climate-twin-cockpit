@@ -23,7 +23,8 @@ app.use((req, res, next) => {
 // Serve 7-day forecast model data
 app.get("/api/forecast/weekly", (req, res) => {
   try {
-    const forecastPath = "C:/Users/manpr/Desktop/Nerd Stuff/hackathon projects/isro/Model Training Data/forecast_7d.json";
+    const rootDir = process.cwd();
+    const forecastPath = path.join(rootDir, "data", "forecast_7d.json");
     const data = fs.readFileSync(forecastPath, "utf8");
     res.setHeader("Content-Type", "application/json");
     res.send(data);
@@ -253,7 +254,8 @@ app.post("/api/chat", async (req, res) => {
 // Serve district names list for typeahead UI
 app.get('/api/districts', (req, res) => {
   try {
-    const districtFile = 'C:/Users/manpr/Desktop/Nerd Stuff/hackathon projects/isro/Model Training Data/district_names.txt';
+    const rootDir = process.cwd();
+    const districtFile = path.join(rootDir, "model", "district_names.txt");
     const content = fs.readFileSync(districtFile, 'utf-8');
     const districts = content.split(/\r?\n/).map((d: string) => d.trim()).filter((d: string) => d.length > 0);
     res.json(districts);
@@ -270,11 +272,12 @@ app.post('/api/predict/tomorrow', (req, res) => {
     return res.status(400).json({ error: 'District is required' });
   }
 
-  const pythonPath = 'C:\\Users\\manpr\\AppData\\Local\\Programs\\Python\\Python314\\python.exe';
-  const scriptPath = 'c:/Users/manpr/Desktop/Nerd Stuff/hackathon projects/isro/Model Training Data/predict_district.py';
-
+  const rootDir = process.cwd();
+  const pythonPath = 'python';
+  const scriptPath = path.join(rootDir, "model", "predict_district.py");
+  
   const child = spawn(pythonPath, [scriptPath], {
-    cwd: 'c:/Users/manpr/Desktop/Nerd Stuff/hackathon projects/isro/Model Training Data',
+    cwd: path.join(rootDir, "model"),
     env: { ...process.env, PYTHONIOENCODING: 'utf-8' }
   });
   let output = '';
